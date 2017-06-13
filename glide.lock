@@ -1,0 +1,169 @@
+hash: a2d61b0d710351be03c839d97adabf4ee794fcafe73d237fe4511832d524f29c
+updated: 2017-06-12T16:36:24.841940513+03:00
+imports:
+- name: github.com/aws/aws-sdk-go
+  version: 512bdaf8bec30abd545b440447cebb57b53d3af9
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/endpoints
+  - aws/request
+  - aws/session
+  - aws/signer/v4
+  - internal/shareddefaults
+  - private/protocol
+  - private/protocol/json/jsonutil
+  - private/protocol/jsonrpc
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/restxml
+  - private/protocol/xml/xmlutil
+  - service/cloudwatchlogs
+  - service/cloudwatchlogs/cloudwatchlogsiface
+  - service/dynamodb
+  - service/s3
+  - service/s3/s3iface
+  - service/sts
+- name: github.com/davecgh/go-spew
+  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  subpackages:
+  - spew
+- name: github.com/eapache/go-resiliency
+  version: b86b1ec0dd4209a588dc1285cdd471e73525c0b3
+  subpackages:
+  - breaker
+- name: github.com/eapache/go-xerial-snappy
+  version: bb955e01b9346ac19dc29eb16586c90ded99a98c
+- name: github.com/eapache/queue
+  version: ded5959c0d4e360646dc9e9908cff48666781367
+- name: github.com/elastic/beats
+  version: 31a054703eeff7e14a090893d05a4562f7cd60fd
+  subpackages:
+  - libbeat/beat
+  - libbeat/cfgfile
+  - libbeat/common
+  - libbeat/common/dtfmt
+  - libbeat/common/file
+  - libbeat/common/fmtstr
+  - libbeat/common/jsontransform
+  - libbeat/common/match
+  - libbeat/common/op
+  - libbeat/common/streambuf
+  - libbeat/dashboards/dashboards
+  - libbeat/logp
+  - libbeat/monitoring
+  - libbeat/monitoring/adapter
+  - libbeat/outputs
+  - libbeat/outputs/codecs/format
+  - libbeat/outputs/codecs/json
+  - libbeat/outputs/console
+  - libbeat/outputs/elasticsearch
+  - libbeat/outputs/fileout
+  - libbeat/outputs/kafka
+  - libbeat/outputs/logstash
+  - libbeat/outputs/mode
+  - libbeat/outputs/mode/lb
+  - libbeat/outputs/mode/modeutil
+  - libbeat/outputs/mode/single
+  - libbeat/outputs/outil
+  - libbeat/outputs/redis
+  - libbeat/outputs/transport
+  - libbeat/paths
+  - libbeat/plugin
+  - libbeat/processors
+  - libbeat/processors/actions
+  - libbeat/processors/add_cloud_metadata
+  - libbeat/publisher
+  - libbeat/service
+  - metricbeat/schema
+  - metricbeat/schema/mapstriface
+- name: github.com/elastic/go-lumber
+  version: 616041e345fc33c97bc0eb0fa6b388aa07bca3e1
+  subpackages:
+  - client/v2
+  - lj
+  - log
+  - protocol/v2
+  - server/internal
+  - server/v2
+- name: github.com/elastic/go-ucfg
+  version: ec8488a52542c0c51e42e8ea204dcaff400bc644
+  subpackages:
+  - cfgutil
+  - flag
+  - internal/parse
+  - json
+  - yaml
+- name: github.com/garyburd/redigo
+  version: 8873b2f1995f59d4bcdd2b0dc9858e2cb9bf0c13
+  subpackages:
+  - internal
+  - redis
+- name: github.com/go-ini/ini
+  version: afbc45e87f3ba324c532d12c71918ef52e0fb194
+- name: github.com/golang/snappy
+  version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
+- name: github.com/jmespath/go-jmespath
+  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
+- name: github.com/joeshaw/multierror
+  version: 69b34d4ec901851247ae7e77d33909caf9df99ed
+- name: github.com/klauspost/compress
+  version: 006acde2c5d283d2f8b8aa03d8f0cd2891c680cf
+  subpackages:
+  - flate
+  - zlib
+- name: github.com/klauspost/cpuid
+  version: 09cded8978dc9e80714c4d85b0322337b0a1e5e0
+- name: github.com/klauspost/crc32
+  version: 19b0b332c9e4516a6370a0456e6182c3b5036720
+- name: github.com/mitchellh/hashstructure
+  version: b098c52ef6beab8cd82bc4a32422cf54b890e8fa
+- name: github.com/nranchev/go-libGeoIP
+  version: c78e8bd2dd3599feb21fd30886043979e82fe948
+- name: github.com/pierrec/lz4
+  version: 5c9560bfa9ace2bf86080bf40d46b34ae44604df
+- name: github.com/pierrec/xxHash
+  version: 5a004441f897722c627870a981d02b29924215fa
+  subpackages:
+  - xxHash32
+- name: github.com/pkg/errors
+  version: 01fa4104b9c248c8945d14d9f128454d5b28d595
+- name: github.com/rcrowley/go-metrics
+  version: ab2277b1c5d15c3cba104e9cbddbdfc622df5ad8
+  subpackages:
+  - exp
+- name: github.com/satori/go.uuid
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+- name: github.com/Shopify/sarama
+  version: f0996189c86dc27338468f2a9b10077c6d572b34
+  repo: https://github.com/urso/sarama
+- name: github.com/stretchr/testify
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+- name: golang.org/x/net
+  version: d58ca6618b994150e624f6888d871f4709db51a0
+  subpackages:
+  - icmp
+  - ipv4
+  - ipv6
+  - proxy
+  - publicsuffix
+- name: golang.org/x/sys
+  version: 62bee037599929a6e9146f29d10dd5208c43507d
+  subpackages:
+  - windows
+  - windows/svc
+  - windows/svc/debug
+- name: gopkg.in/yaml.v2
+  version: a83829b6f1293c91addabc89d0571c246397bbf4
+testImports: []
