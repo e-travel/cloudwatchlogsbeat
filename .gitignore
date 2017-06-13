@@ -1,0 +1,8 @@
+/cloudwatchlogsbeat
+/cloudwatchlogsbeat.db
+data/
+log/
+logs/
+
+vendor/
+!vendor/.gitkeep
