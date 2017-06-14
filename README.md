@@ -20,14 +20,10 @@ First of all, make sure that you have
 a [working go installation](https://golang.org/doc/install) (this
 includes a valid `$GOPATH`).
 
-Dependency management is done using [glide](https://glide.sh/), so
-make sure that it is installed.
-
 The following steps are necessary for a working installation:
 
     $ go get -u github.com/e-travel/cloudwatchlogsbeat
     $ cd $GOPATH/src/github.com/e-travel/cloudwatchlogsbeat
-    $ glide install # fetches the dependencies
     $ go build -i # builds the beat and builds/installs the dependencies
     $ ./cloudwatchlogsbeat -e -d '*'
 
