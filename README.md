@@ -16,9 +16,24 @@ responsibility for any kind of damage that may occur as a result.
 
 # Description
 
-TBC
+Cloudwatchlogsbeat operates by monitoring a set of AWS Cloudwatch Log
+Groups specified in
+its [configuration](cloudwatchlogsbeat.full.yml). The log groups are
+periodically probed for new streams which are then polled for new
+events.
 
-# Setup
+The beat if fully concurrent in terms of the monitored log groups and
+streams and makes use of AWS SDK's exponential back-off retry policy
+for all its requests to the AWS APIs to avoid throttling errors. Any
+throttling errors that will inevitably occur (due to maximum retries
+for example) are dealt with gracefully without losing stream events
+(stream monitoring is resumed from where it left off).
+
+The state of the beat is saved in a user-specified S3 bucket on a
+per-stream basis. This way, the beat knows what is the last event that
+was harvested per stream and can resume its operation once restarted.
+
+# Setup / Installation
 
 First of all, make sure that you have
 a [working go installation](https://golang.org/doc/install) (this
@@ -62,7 +77,6 @@ logs:GetLogEvents
 logs:FilterLogEvents
 logs:Describe*
 ```
-
 plus `s3:*` on the S3 bucket resource.
 
 # Tests
@@ -71,20 +85,6 @@ The beat's tests can be executed as follows:
 
     $ cd beater
     $ go test -v
-
-# Deployment
-
-## Build
-
-Consider building the project using
-
-    $ go build -ldflags="-w -s"
-
-The generated executable is about 50% smaller.
-
-## Configuration
-
-TBC
 
 # Contributing
 
