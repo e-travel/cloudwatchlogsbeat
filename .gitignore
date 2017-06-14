@@ -3,6 +3,3 @@
 data/
 log/
 logs/
-
-vendor/
-!vendor/.gitkeep
