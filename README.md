@@ -1,3 +1,5 @@
+[![Travis Build Status](https://travis-ci.org/e-travel/cloudwatchlogsbeat.svg?branch=master)](https://travis-ci.org/e-travel/cloudwatchlogsbeat)
+
 # Cloudwatchlogsbeat
 
 Cloudwatchlogsbeat is a [beat](https://www.elastic.co/products/beats) for

@@ -1,9 +1,15 @@
 language: go
+
 go:
   - 1.6
   - 1.7
   - 1.8
   - master
+
+script:
+  - go build -v
+  - cd beater; go test -v
+
 branches:
   only:
     - master
