@@ -5,6 +5,11 @@ the [elastic stack](https://www.elastic.co/products). Its purpose is
 to harvest data from AWS Cloudwatch Log Groups and ship them to a
 variety of sinks that include logstash, elasticsearch etc.
 
+**Disclaimer**: the beat is production-tested and is currently being
+used to harvest thousands of stream events per minute. However, please
+keep in mind that there may be bugs and that we accept no
+responsibility for any kind of damage that may occur as a result.
+
 # Description
 
 TBC
@@ -23,8 +28,7 @@ The following steps are necessary for a working installation:
     $ go get -u github.com/e-travel/cloudwatchlogsbeat
     $ cd $GOPATH/src/github.com/e-travel/cloudwatchlogsbeat
     $ glide install # fetches the dependencies
-    $ go build -i # builds and installs the dependencies
-    $ go build -v # builds the beat
+    $ go build -i # builds the beat and builds/installs the dependencies
     $ ./cloudwatchlogsbeat -e -d '*'
 
 # AWS configuration
@@ -78,29 +82,21 @@ Consider building the project using
 
 The generated executable is about 50% smaller.
 
-## Elasticsearch
+## Configuration
 
-The `elasticsearch` host is `localhost` by default but can be
-overriden from the command line as follows:
+TBC
 
-    $ ./cloudwatchlogsbeat -E output.elasticsearch.hosts=http://elastisearch.somewhere.org:9200
+# Contributing
 
-# Further Work
+Bug reports and pull requests are welcome on GitHub at
+https://github.com/e-travel/cloudwatchlogsbeat. This project is
+intended to be a safe, welcoming space for collaboration, and
+contributors are expected to adhere to
+the [Contributor Covenant](http://contributor-covenant.org) code of
+conduct.
 
-## Multiple Registries
 
-S3 registry has been implemented
+# License
 
-Pending:
-* in-memory (default for local harvesting)
-
-## Concurrency
-
-streams and groups need to communicate through a channel on the
-following occasion:
-
-* SIGTERM interrupt has been received - stream needs to cleanup / save
-  state
-
-the same is true for group and manager communication (but less of a
-priority)
+The beat is available as open source under the terms of
+the [MIT License](http://opensource.org/licenses/MIT).
