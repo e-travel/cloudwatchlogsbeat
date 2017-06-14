@@ -1,4 +1,6 @@
 [![Travis Build Status](https://travis-ci.org/e-travel/cloudwatchlogsbeat.svg?branch=master)](https://travis-ci.org/e-travel/cloudwatchlogsbeat)
+[![Go Report
+Card](https://goreportcard.com/badge/github.com/e-travel/cloudwatchlogsbeat)](https://goreportcard.com/report/github.com/e-travel/cloudwatchlogsbeat)
 
 # Cloudwatchlogsbeat
 
