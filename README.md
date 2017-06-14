@@ -2,20 +2,27 @@
 
 Cloudwatchlogsbeat is a [beat](https://www.elastic.co/products/beats) for
 the [elastic stack](https://www.elastic.co/products). Its purpose is
-to harvest data from AWS Cloudwatch Log Groups and ship them to
-logstash/elasticsearch.
+to harvest data from AWS Cloudwatch Log Groups and ship them to a
+variety of sinks that include logstash, elasticsearch etc.
+
+# Description
+
+TBC
 
 # Setup
 
 First of all, make sure that you have
-a [working go installation](https://golang.org/doc/install).
+a [working go installation](https://golang.org/doc/install) (this
+includes a valid `$GOPATH`).
 
 Dependency management is done using [glide](https://glide.sh/), so
 make sure that it is installed.
 
 The following steps are necessary for a working installation:
 
-    $ glide install
+    $ go get -u github.com/e-travel/cloudwatchlogsbeat
+    $ cd $GOPATH/src/github.com/e-travel/cloudwatchlogsbeat
+    $ glide install # fetches the dependencies
     $ go build -i # builds and installs the dependencies
     $ go build -v # builds the beat
     $ ./cloudwatchlogsbeat -e -d '*'
@@ -37,7 +44,22 @@ necessary:
 
     AWS_PROFILE
 
-The AWS region can be set in the beat's configuration file.
+The AWS region must be set in the beat's configuration file.
+
+If the beat is deployed to an EC2 instance, there's also the option of
+an IAM Role that is attached to the EC2 instance. In this case, the
+actions that must be allowed in the IAM policy document are as
+follows:
+
+```
+logs:DescribeLogGroups
+logs:DescribeLogStreams
+logs:GetLogEvents
+logs:FilterLogEvents
+logs:Describe*
+```
+
+plus `s3:*` on the S3 bucket resource.
 
 # Tests
 
@@ -75,21 +97,10 @@ Pending:
 ## Concurrency
 
 streams and groups need to communicate through a channel on the
-following occasions:
+following occasion:
 
-* stream has expired (last event is too old - group needs to cleanup
-  the stream)
-* stream has a fatal error (group needs to cleanup
-  the stream)
 * SIGTERM interrupt has been received - stream needs to cleanup / save
   state
 
 the same is true for group and manager communication (but less of a
 priority)
-
-### Tests
-
-Write tests using aws mocking libraries
-for
-[cloudwatchlogs](https://docs.aws.amazon.com/sdk-for-go/api/service/cloudwatchlogs/cloudwatchlogsiface/) and
-[dynamodb](https://docs.aws.amazon.com/sdk-for-go/api/service/dynamodb/dynamodbiface/)
