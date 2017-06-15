@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
+	"github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
 	"github.com/aws/aws-sdk-go/service/s3"
 
 	"github.com/elastic/beats/libbeat/beat"
@@ -33,7 +34,7 @@ type Cloudwatchlogsbeat struct {
 	Registry Registry
 
 	// Client to amazon cloudwatch logs API
-	Svc *cloudwatchlogs.CloudWatchLogs
+	AWSClient cloudwatchlogsiface.CloudWatchLogsAPI
 
 	// AWS client session
 	Session *session.Session
@@ -67,11 +68,11 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 
 	// Create instance
 	beat := &Cloudwatchlogsbeat{
-		Done:     make(chan struct{}),
-		Config:   config,
-		Session:  sess,
-		Svc:      svc,
-		Registry: registry,
+		Done:      make(chan struct{}),
+		Config:    config,
+		Session:   sess,
+		AWSClient: svc,
+		Registry:  registry,
 	}
 
 	beat.Manager = NewGroupManager(beat)

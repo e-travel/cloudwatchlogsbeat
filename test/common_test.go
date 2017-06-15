@@ -24,10 +24,18 @@ type MockCWLClient struct {
 	cloudwatchlogsiface.CloudWatchLogsAPI
 }
 
+// GetLogEvents
 var stubGetLogEvents func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error)
 
 func (client *MockCWLClient) GetLogEvents(input *cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
 	return stubGetLogEvents(input)
+}
+
+// DescribeLogStreamsPages
+var stubDescribeLogStreamsPages func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error
+
+func (client *MockCWLClient) DescribeLogStreamsPages(input *cloudwatchlogs.DescribeLogStreamsInput, f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
+	return stubDescribeLogStreamsPages(f)
 }
 
 // our mock publisher

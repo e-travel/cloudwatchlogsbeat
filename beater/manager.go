@@ -39,7 +39,7 @@ func (manager *GroupManager) refreshGroups() {
 			}
 			// If the input group name ends with a star, then consider it a prefix and
 			// find all group names with that prefix
-			err := manager.beat.Svc.DescribeLogGroupsPages(
+			err := manager.beat.AWSClient.DescribeLogGroupsPages(
 				&cloudwatchlogs.DescribeLogGroupsInput{
 					LogGroupNamePrefix: aws.String(groupName[:len(groupName)-1]),
 				},

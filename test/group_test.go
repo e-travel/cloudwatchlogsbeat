@@ -1,0 +1,157 @@
+package test
+
+import (
+	"testing"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
+	"github.com/e-travel/cloudwatchlogsbeat/beater"
+	"github.com/e-travel/cloudwatchlogsbeat/config"
+	"github.com/stretchr/testify/assert"
+)
+
+func Test_Group_WillAdd_NewStream(t *testing.T) {
+	// setup
+	horizon := time.Hour
+	eventTimestamp := time.Now().UnixNano() - (10 * time.Minute).Nanoseconds()
+	prospector := &config.Prospector{
+		StreamLastEventHorizon: horizon,
+	}
+	beat := &beater.Cloudwatchlogsbeat{
+		AWSClient: &MockCWLClient{},
+		Registry:  &MockRegistry{},
+	}
+	group := beater.NewGroup("group", prospector, beat)
+	output := &cloudwatchlogs.DescribeLogStreamsOutput{
+		LogStreams: []*cloudwatchlogs.LogStream{
+			&cloudwatchlogs.LogStream{
+				LogStreamName:      aws.String("stream_name"),
+				LastEventTimestamp: aws.Int64(eventTimestamp),
+			},
+		},
+	}
+	// stub our function to return the error
+	stubDescribeLogStreamsPages = func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
+		f(output, false)
+		return nil
+	}
+	// stub our function to return an empty event slice (infinite loop)
+	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
+		return &cloudwatchlogs.GetLogEventsOutput{
+			Events: []*cloudwatchlogs.OutputLogEvent{},
+		}, nil
+	}
+	// stub the registry functions
+	stubRegistryRead = func(*beater.Stream) error { return nil }
+	stubRegistryWrite = func(*beater.Stream) error { return nil }
+
+	// go!
+	group.RefreshStreams()
+	assert.Equal(t, 1, len(group.Streams))
+	_, ok := group.Streams["stream_name"]
+	assert.True(t, ok)
+}
+
+func Test_Group_WillRemove_ExpiredStream(t *testing.T) {
+	// setup
+	horizon := 3 * time.Hour
+	eventTimestamp := 1000*time.Now().Unix() - (2*time.Hour).Nanoseconds()/1e6
+	prospector := &config.Prospector{
+		StreamLastEventHorizon: horizon,
+	}
+	beat := &beater.Cloudwatchlogsbeat{
+		AWSClient: &MockCWLClient{},
+		Registry:  &MockRegistry{},
+	}
+	group := beater.NewGroup("group", prospector, beat)
+	output := &cloudwatchlogs.DescribeLogStreamsOutput{
+		LogStreams: []*cloudwatchlogs.LogStream{
+			&cloudwatchlogs.LogStream{
+				LogStreamName:      aws.String("stream_name"),
+				LastEventTimestamp: aws.Int64(eventTimestamp),
+			},
+		},
+	}
+	// stub our function to return the error
+	stubDescribeLogStreamsPages = func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
+		f(output, false)
+		return nil
+	}
+	// stub our function to return an empty event slice (infinite loop)
+	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
+		return &cloudwatchlogs.GetLogEventsOutput{
+			Events: []*cloudwatchlogs.OutputLogEvent{},
+		}, nil
+	}
+	// stub the registry functions
+	stubRegistryRead = func(*beater.Stream) error { return nil }
+	stubRegistryWrite = func(*beater.Stream) error { return nil }
+
+	// this will add the stream
+	group.RefreshStreams()
+	assert.Equal(t, 1, len(group.Streams))
+	_, ok := group.Streams["stream_name"]
+	assert.True(t, ok)
+
+	// ok; let's push the past a bit back
+	eventTimestamp = 1000*time.Now().Unix() - (4*time.Hour).Nanoseconds()/1e6
+	output = &cloudwatchlogs.DescribeLogStreamsOutput{
+		LogStreams: []*cloudwatchlogs.LogStream{
+			&cloudwatchlogs.LogStream{
+				LogStreamName:      aws.String("stream_name"),
+				LastEventTimestamp: aws.Int64(eventTimestamp),
+			},
+		},
+	}
+
+	// fire!
+	group.RefreshStreams()
+	assert.Equal(t, 0, len(group.Streams))
+	_, ok = group.Streams["stream_name"]
+	assert.False(t, ok)
+
+}
+
+func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
+	// setup
+	horizon := 1 * time.Hour
+	eventTimestamp := 1000*time.Now().Unix() - (2*time.Hour).Nanoseconds()/1e6
+	prospector := &config.Prospector{
+		StreamLastEventHorizon: horizon,
+	}
+	beat := &beater.Cloudwatchlogsbeat{
+		AWSClient: &MockCWLClient{},
+		Registry:  &MockRegistry{},
+	}
+	group := beater.NewGroup("group", prospector, beat)
+	output := &cloudwatchlogs.DescribeLogStreamsOutput{
+		LogStreams: []*cloudwatchlogs.LogStream{
+			&cloudwatchlogs.LogStream{
+				LogStreamName:      aws.String("stream_name"),
+				LastEventTimestamp: aws.Int64(eventTimestamp),
+			},
+		},
+	}
+	// stub our function to return the error
+	stubDescribeLogStreamsPages = func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
+		f(output, false)
+		return nil
+	}
+	// stub our function to return an empty event slice (infinite loop)
+	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
+		return &cloudwatchlogs.GetLogEventsOutput{
+			Events: []*cloudwatchlogs.OutputLogEvent{},
+		}, nil
+	}
+	// stub the registry functions
+	stubRegistryRead = func(*beater.Stream) error { return nil }
+	stubRegistryWrite = func(*beater.Stream) error { return nil }
+
+	// go!
+	group.RefreshStreams()
+	assert.Equal(t, 0, len(group.Streams))
+	_, ok := group.Streams["stream_name"]
+	assert.False(t, ok)
+
+}

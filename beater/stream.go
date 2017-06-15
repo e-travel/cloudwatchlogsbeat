@@ -31,12 +31,14 @@ type Stream struct {
 	MultiRegex *regexp.Regexp
 	// the publisher for our events
 	Publisher EventPublisher
-	// channel for signaling that the stream's processing is over
+	// channel for the stream to signal that its processing is over
 	finished chan<- bool
+	// channel for the stream to be notified that it has expired
+	expired chan bool
 }
 
 func NewStream(name string, group *Group, client cloudwatchlogsiface.CloudWatchLogsAPI,
-	registry Registry, finished chan<- bool) *Stream {
+	registry Registry, finished chan<- bool, expired chan bool) *Stream {
 	params := &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  aws.String(group.Name),
 		LogStreamName: aws.String(name),
@@ -53,6 +55,7 @@ func NewStream(name string, group *Group, client cloudwatchlogsiface.CloudWatchL
 		Multiline: group.Prospector.Multiline,
 		Publisher: Publisher{},
 		finished:  finished,
+		expired:   expired,
 	}
 
 	// Construct regular expression if multiline mode
@@ -115,6 +118,12 @@ func (stream *Stream) Monitor() {
 			logp.Err("Failed to read stream %s [group: %s] msg=%s",
 				stream.Name, stream.Group.Name, err.Error())
 			return
+		}
+		select {
+		case <-stream.expired:
+			return
+		default:
+			//noop
 		}
 		// TODO: Revise if this is needed and what its value should be
 		time.Sleep(500 * time.Millisecond)

@@ -61,7 +61,7 @@ func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
+	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
 	stream.Publisher = MockPublisher{}
 	// fire!
 	stream.Next()
@@ -107,7 +107,7 @@ func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
+	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
 	stream.Publisher = MockPublisher{}
 	// fire!
 	stream.Next()
@@ -159,7 +159,7 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
+	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
 	stream.Publisher = MockPublisher{}
 	// fire!
 	stream.Next()
@@ -212,7 +212,7 @@ func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
 
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
+	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
 	stream.Publisher = MockPublisher{}
 	// fire!
 	stream.Next()
