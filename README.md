@@ -83,8 +83,7 @@ plus `s3:*` on the S3 bucket resource.
 
 The beat's tests can be executed as follows:
 
-    $ cd beater
-    $ go test -v
+    $ go test -v github.com/e-travel/cloudwatchlogsbeat/test
 
 # Contributing
 

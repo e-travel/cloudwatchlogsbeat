@@ -1,4 +1,4 @@
-package beater_test
+package test
 
 import (
 	"bytes"

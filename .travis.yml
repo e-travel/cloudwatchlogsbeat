@@ -9,7 +9,7 @@ install: true
 
 script:
   - go build -v
-  - cd beater; go test -v
+  - cd test; go test -v
 
 branches:
   only:
