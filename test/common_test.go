@@ -50,9 +50,17 @@ func (publisher MockPublisher) Publish(event *beater.Event) {
 }
 
 // helper function for creating Events
-func createOutputLogEvent(message string) *cloudwatchlogs.OutputLogEvent {
+func CreateOutputLogEvent(message string) *cloudwatchlogs.OutputLogEvent {
+	return CreateOutputLogEventWithTimestamp(message, time.Now().Unix())
+}
+
+func CreateOutputLogEventWithTimestamp(message string, timestamp int64) *cloudwatchlogs.OutputLogEvent {
 	return &cloudwatchlogs.OutputLogEvent{
 		Message:   aws.String(message),
-		Timestamp: aws.Int64(time.Now().Unix()),
+		Timestamp: aws.Int64(timestamp),
 	}
+}
+
+func TimeBeforeNowInMilliseconds(span time.Duration) int64 {
+	return 1000*time.Now().UTC().Unix() - span.Nanoseconds()/1e6
 }

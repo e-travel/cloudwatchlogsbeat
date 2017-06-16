@@ -2,10 +2,12 @@ package test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/e-travel/cloudwatchlogsbeat/beater"
 	"github.com/e-travel/cloudwatchlogsbeat/config"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/stretchr/testify/assert"
@@ -23,9 +25,9 @@ func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 
 	// stub our expected events
 	receivedEvents := []*cloudwatchlogs.OutputLogEvent{
-		createOutputLogEvent("Event 1\n"),
-		createOutputLogEvent("Event 2\n"),
-		createOutputLogEvent("Event 3\n"),
+		CreateOutputLogEvent("Event 1\n"),
+		CreateOutputLogEvent("Event 2\n"),
+		CreateOutputLogEvent("Event 3\n"),
 	}
 
 	// stub our function to return the events specified in this test
@@ -109,4 +111,24 @@ func Test_StreamShouldSendACleanupEvent_OnReceiving_AnExpirationEvent(t *testing
 	go func() { expired <- true }()
 	// capture and assert the finished event
 	assert.True(t, <-finished)
+}
+
+func Test_StreamParams_HaveTheCorrectStartTime(t *testing.T) {
+	horizon := time.Hour
+	group := &beater.Group{
+		Name: "group",
+		Prospector: &config.Prospector{
+			StreamLastEventHorizon: horizon,
+		},
+	}
+
+	// create the stream
+	stream := beater.NewStream("TestStream", group, nil, nil, nil, nil)
+	// create the events
+	event1 := CreateOutputLogEventWithTimestamp("Event 1\n", TimeBeforeNowInMilliseconds(2*time.Hour))
+	event2 := CreateOutputLogEventWithTimestamp("Event 2\n", TimeBeforeNowInMilliseconds(30*time.Minute))
+	startTime := aws.Int64Value(stream.Params.StartTime)
+	// assert
+	assert.True(t, *event1.Timestamp < startTime)
+	assert.True(t, *event2.Timestamp > startTime)
 }

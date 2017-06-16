@@ -1,5 +1,5 @@
 /cloudwatchlogsbeat
-/cloudwatchlogsbeat.db
 /data
-/log
 /logs
+
+*.out

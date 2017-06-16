@@ -39,11 +39,15 @@ type Stream struct {
 
 func NewStream(name string, group *Group, client cloudwatchlogsiface.CloudWatchLogsAPI,
 	registry Registry, finished chan<- bool, expired chan bool) *Stream {
+
+	startTime := time.Now().UTC().Add(-group.Prospector.StreamLastEventHorizon)
+
 	params := &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  aws.String(group.Name),
 		LogStreamName: aws.String(name),
 		StartFromHead: aws.Bool(true),
 		Limit:         aws.Int64(100),
+		StartTime:     aws.Int64(startTime.UnixNano() / 1e6),
 	}
 
 	stream := &Stream{

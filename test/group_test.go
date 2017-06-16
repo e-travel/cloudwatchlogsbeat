@@ -14,7 +14,7 @@ import (
 func Test_Group_WillAdd_NewStream(t *testing.T) {
 	// setup
 	horizon := time.Hour
-	eventTimestamp := time.Now().UnixNano() - (10 * time.Minute).Nanoseconds()
+	eventTimestamp := TimeBeforeNowInMilliseconds(30 * time.Minute)
 	prospector := &config.Prospector{
 		StreamLastEventHorizon: horizon,
 	}
@@ -56,7 +56,7 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 func Test_Group_WillRemove_ExpiredStream(t *testing.T) {
 	// setup
 	horizon := 3 * time.Hour
-	eventTimestamp := 1000*time.Now().Unix() - (2*time.Hour).Nanoseconds()/1e6
+	eventTimestamp := TimeBeforeNowInMilliseconds(2 * time.Hour)
 	prospector := &config.Prospector{
 		StreamLastEventHorizon: horizon,
 	}
@@ -95,7 +95,7 @@ func Test_Group_WillRemove_ExpiredStream(t *testing.T) {
 	assert.True(t, ok)
 
 	// ok; let's push the past a bit back
-	eventTimestamp = 1000*time.Now().Unix() - (4*time.Hour).Nanoseconds()/1e6
+	eventTimestamp = TimeBeforeNowInMilliseconds(4 * time.Hour)
 	output = &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			&cloudwatchlogs.LogStream{
@@ -116,7 +116,7 @@ func Test_Group_WillRemove_ExpiredStream(t *testing.T) {
 func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 	// setup
 	horizon := 1 * time.Hour
-	eventTimestamp := 1000*time.Now().Unix() - (2*time.Hour).Nanoseconds()/1e6
+	eventTimestamp := TimeBeforeNowInMilliseconds(2 * time.Hour)
 	prospector := &config.Prospector{
 		StreamLastEventHorizon: horizon,
 	}

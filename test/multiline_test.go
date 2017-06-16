@@ -13,15 +13,15 @@ import (
 
 // our example events
 var allEvents = []*cloudwatchlogs.OutputLogEvent{
-	createOutputLogEvent("START RequestId: aaa-bbb Version: $LATEST\n"),
-	createOutputLogEvent("2017-06-12T10:09:46.650Z aaa-bbb [Info] Hello\n"),
-	createOutputLogEvent("REPORT RequestId: aaa-bbb Duration: 1.27 ms\n"),
-	createOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
-	createOutputLogEvent("2017-06-12T10:09:47.650Z aaa-ccc [Info] Goodbye\n"),
-	createOutputLogEvent("REPORT RequestId: aaa-ccc Duration: 1.46 ms\n"),
-	createOutputLogEvent("START RequestId: aaa-ddd Version: $LATEST\n"),
-	createOutputLogEvent("2017-06-12T10:09:49.650Z aaa-ddd [Info] Goodbye\n"),
-	createOutputLogEvent("REPORT RequestId: aaa-ddd Duration: 1.52 ms\n"),
+	CreateOutputLogEvent("START RequestId: aaa-bbb Version: $LATEST\n"),
+	CreateOutputLogEvent("2017-06-12T10:09:46.650Z aaa-bbb [Info] Hello\n"),
+	CreateOutputLogEvent("REPORT RequestId: aaa-bbb Duration: 1.27 ms\n"),
+	CreateOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
+	CreateOutputLogEvent("2017-06-12T10:09:47.650Z aaa-ccc [Info] Goodbye\n"),
+	CreateOutputLogEvent("REPORT RequestId: aaa-ccc Duration: 1.46 ms\n"),
+	CreateOutputLogEvent("START RequestId: aaa-ddd Version: $LATEST\n"),
+	CreateOutputLogEvent("2017-06-12T10:09:49.650Z aaa-ddd [Info] Goodbye\n"),
+	CreateOutputLogEvent("REPORT RequestId: aaa-ddd Duration: 1.52 ms\n"),
 }
 
 func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
@@ -137,10 +137,10 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 
 	// create the events that we expect
 	events := []*cloudwatchlogs.OutputLogEvent{
-		createOutputLogEvent("TAG 1 2 3\n"),
-		createOutputLogEvent("TAG 4 5 6\n"),
-		createOutputLogEvent("END RequestId: aaa-bbb Version: $LATEST\n"),
-		createOutputLogEvent("TAG 11 22 33\n"),
+		CreateOutputLogEvent("TAG 1 2 3\n"),
+		CreateOutputLogEvent("TAG 4 5 6\n"),
+		CreateOutputLogEvent("END RequestId: aaa-bbb Version: $LATEST\n"),
+		CreateOutputLogEvent("TAG 11 22 33\n"),
 	}
 
 	// stub our function
@@ -190,10 +190,10 @@ func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
 
 	// create the events that we expect
 	events := []*cloudwatchlogs.OutputLogEvent{
-		createOutputLogEvent("START RequestId: aaa-bbb Version: $LATEST\n"),
-		createOutputLogEvent("TAG 1 2 3\n"),
-		createOutputLogEvent("TAG 4 5 6\n"),
-		createOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
+		CreateOutputLogEvent("START RequestId: aaa-bbb Version: $LATEST\n"),
+		CreateOutputLogEvent("TAG 1 2 3\n"),
+		CreateOutputLogEvent("TAG 4 5 6\n"),
+		CreateOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
 	}
 
 	// stub our function
