@@ -78,5 +78,5 @@ func Test_ReadStreamInfo_WhenItemExists_ShouldUpdateStream(t *testing.T) {
 }
 
 func Test_WriteStreamInfo(t *testing.T) {
-
+	t.Skip("Pending")
 }

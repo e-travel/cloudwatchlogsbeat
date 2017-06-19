@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
-	"github.com/elastic/beats/libbeat/logp"
 )
 
 type Stream struct {
@@ -94,10 +93,7 @@ func (stream *Stream) Next() error {
 	}
 	stream.Params.NextToken = output.NextForwardToken
 	err = stream.Registry.WriteStreamInfo(stream)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // Coninuously monitors the stream for new events. If an error is
@@ -111,16 +107,12 @@ func (stream *Stream) Monitor() {
 	// first of all, read the stream's info from our registry storage
 	err := stream.Registry.ReadStreamInfo(stream)
 	if err != nil {
-		logp.Err("Failed to fetch info of stream %s [group: %s] from registry mesg=%s",
-			stream.Name, stream.Group.Name, err.Error())
 		return
 	}
 
 	for {
 		err := stream.Next()
 		if err != nil {
-			logp.Err("Failed to read stream %s [group: %s] msg=%s",
-				stream.Name, stream.Group.Name, err.Error())
 			return
 		}
 		select {

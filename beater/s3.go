@@ -33,7 +33,7 @@ func (registry *S3Registry) ReadStreamInfo(stream *Stream) error {
 	key := generateKey(stream)
 	defer func() {
 		if err != nil {
-			logp.Warn(fmt.Sprintf("s3: failed to write key=%s [message=%s]", key, err.Error()))
+			logp.Warn(fmt.Sprintf("s3: failed to read key=%s [message=%s]", key, err.Error()))
 		}
 	}()
 
