@@ -52,7 +52,7 @@ func (group *Group) RefreshStreams() {
 			for _, logStream := range page.LogStreams {
 				name := aws.StringValue(logStream.LogStreamName)
 				if logStream.LastEventTimestamp == nil {
-					logp.Critical("We have a nil stream timestamp (%s)", name)
+					logp.Critical("We have a nil stream timestamp (%s/%s)", group.Name, name)
 					continue
 				}
 				// is the stream too old?
