@@ -67,7 +67,7 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	// Create beat registry
 	if config.S3BucketName == "" {
 		logp.Info("Working with in-memory registry")
-		registry = &DummyRegistry{}
+		registry = NewDummyRegistry()
 	} else {
 		logp.Info("Working with s3 registry in bucket %s", config.S3BucketName)
 		registry = NewS3Registry(s3.New(sess), config.S3BucketName)

@@ -18,11 +18,6 @@ type S3Registry struct {
 	bucketName string
 }
 
-type S3RegistryItem struct {
-	NextToken string
-	Buffer    string
-}
-
 func NewS3Registry(client s3iface.S3API, bucketName string) Registry {
 	registry := &S3Registry{client: client, bucketName: bucketName}
 	return registry
@@ -63,7 +58,7 @@ func (registry *S3Registry) ReadStreamInfo(stream *Stream) error {
 	if err != nil {
 		return err
 	}
-	var item S3RegistryItem
+	var item RegistryItem
 	err = json.Unmarshal(body, &item)
 	if err != nil {
 		return err
@@ -77,7 +72,7 @@ func (registry *S3Registry) ReadStreamInfo(stream *Stream) error {
 }
 
 func (registry *S3Registry) WriteStreamInfo(stream *Stream) error {
-	item := S3RegistryItem{
+	item := RegistryItem{
 		NextToken: *stream.Params.NextToken,
 		Buffer:    stream.Buffer.String(),
 	}
@@ -100,8 +95,4 @@ func (registry *S3Registry) WriteStreamInfo(stream *Stream) error {
 		logp.Warn(fmt.Sprintf("s3: failed to write key=%s [message=%s]", key, err.Error()))
 	}
 	return err
-}
-
-func generateKey(stream *Stream) string {
-	return fmt.Sprintf("%v/%v", stream.Group.Name, stream.Name)
 }
