@@ -51,16 +51,17 @@ func (group *Group) RefreshStreams() {
 		func(page *cloudwatchlogs.DescribeLogStreamsOutput, lastPage bool) bool {
 			for _, logStream := range page.LogStreams {
 				name := aws.StringValue(logStream.LogStreamName)
-				if logStream.LastEventTimestamp == nil {
-					logp.Warn("We have a nil stream timestamp (%s/%s) %v", group.Name, name, *logStream)
-					continue
-				}
-				// is the stream too old?
-				expired := isStreamExpired(logStream.LastEventTimestamp)
 				// are we monitoring the stream already?
 				group.mutex.RLock()
 				stream, ok := group.Streams[name]
 				group.mutex.RUnlock()
+				// is this an empty stream?
+				if logStream.LastEventTimestamp == nil {
+					logp.Warn("We have a nil stream timestamp (%s/%s) %v", group.Name, name, *logStream)
+					continue
+				}
+				// is the stream expired?
+				expired := isStreamExpired(logStream.LastEventTimestamp)
 				// is this a stream that we're monitoring and it has expired?
 				if ok && expired {
 					stream.expired <- true

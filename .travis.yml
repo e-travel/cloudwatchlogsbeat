@@ -8,7 +8,7 @@ install: true
 
 script:
   - go build -v
-  - cd test; go test -v
+  - go test -v -cpu 1 ./test
 
 branches:
   only:

@@ -31,7 +31,7 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 			},
 		},
 	}
-	// stub our function to return the error
+	// stub our function to return the output
 	stubDescribeLogStreamsPages = func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
 		f(output, false)
 		return nil
@@ -73,7 +73,7 @@ func Test_Group_WillRemove_ExpiredStream(t *testing.T) {
 			},
 		},
 	}
-	// stub our function to return the error
+	// stub our function to return the output
 	stubDescribeLogStreamsPages = func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
 		f(output, false)
 		return nil
@@ -108,9 +108,6 @@ func Test_Group_WillRemove_ExpiredStream(t *testing.T) {
 	// fire!
 	group.RefreshStreams()
 	assert.Equal(t, 0, len(group.Streams))
-	_, ok = group.Streams["stream_name"]
-	assert.False(t, ok)
-
 }
 
 func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
@@ -133,7 +130,7 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 			},
 		},
 	}
-	// stub our function to return the error
+	// stub our function to return the output
 	stubDescribeLogStreamsPages = func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
 		f(output, false)
 		return nil
@@ -151,7 +148,45 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 	// go!
 	group.RefreshStreams()
 	assert.Equal(t, 0, len(group.Streams))
-	_, ok := group.Streams["stream_name"]
-	assert.False(t, ok)
+}
 
+func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
+	// setup
+	horizon := 2 * time.Hour
+	eventTimestamp := TimeBeforeNowInMilliseconds(1 * time.Hour)
+	prospector := &config.Prospector{
+		StreamLastEventHorizon: horizon,
+	}
+	beat := &beater.Cloudwatchlogsbeat{
+		AWSClient: &MockCWLClient{},
+		Registry:  &MockRegistry{},
+	}
+	group := beater.NewGroup("group", prospector, beat)
+	output := &cloudwatchlogs.DescribeLogStreamsOutput{
+		LogStreams: []*cloudwatchlogs.LogStream{
+			// the problematic stream
+			&cloudwatchlogs.LogStream{
+				LogStreamName: aws.String("problematic_stream"),
+			},
+			// the normal stream
+			&cloudwatchlogs.LogStream{
+				LogStreamName:      aws.String("normal_stream"),
+				LastEventTimestamp: aws.Int64(eventTimestamp),
+			},
+		},
+	}
+	// stub our function to return the streams
+	stubDescribeLogStreamsPages = func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
+		f(output, false)
+		return nil
+	}
+	// stub the registry functions
+	stubRegistryRead = func(*beater.Stream) error { return nil }
+	stubRegistryWrite = func(*beater.Stream) error { return nil }
+
+	// go!
+	group.RefreshStreams()
+	assert.Equal(t, 1, len(group.Streams))
+	_, ok := group.Streams["problematic_stream"]
+	assert.False(t, ok)
 }
