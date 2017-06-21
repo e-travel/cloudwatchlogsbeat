@@ -32,7 +32,6 @@ func (registry *DummyRegistry) WriteStreamInfo(stream *Stream) error {
 		NextToken: *stream.Params.NextToken,
 		Buffer:    stream.Buffer.String(),
 	}
-	panic("hello")
 	key := generateKey(stream)
 	registry.entriesLock.Lock()
 	registry.entries[key] = &item
