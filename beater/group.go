@@ -120,7 +120,7 @@ func (group *Group) Monitor() {
 
 func (group *Group) report() {
 	n := len(group.Streams)
-	logp.Info("report[group] %s: %d streams under monitoring / %d streams added / %d streams removed during the last %s", group.Name, n, group.newStreams, group.removedStreams, reportFrequency)
+	logp.Info("report[group] =%d|+%d|-%d %s (%s)", n, group.newStreams, group.removedStreams, group.Name, reportFrequency)
 	group.newStreams = 0
 	group.removedStreams = 0
 }

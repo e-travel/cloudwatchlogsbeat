@@ -134,8 +134,8 @@ func (stream *Stream) Monitor() {
 }
 
 func (stream *Stream) report() {
-	logp.Info("report[stream] %s/%s processed %d events in the last %s",
-		stream.Group.Name, stream.Name, stream.publishedEvents, reportFrequency)
+	logp.Info("report[stream] %d %s/%s (%s)",
+		stream.publishedEvents, stream.Group.Name, stream.Name, reportFrequency)
 	stream.publishedEvents = 0
 }
 
