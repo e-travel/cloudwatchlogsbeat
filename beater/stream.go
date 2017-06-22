@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/e-travel/cloudwatchlogsbeat/config"
+	"github.com/elastic/beats/libbeat/logp"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -34,6 +35,8 @@ type Stream struct {
 	finished chan<- bool
 	// channel for the stream to be notified that it has expired
 	expired chan bool
+	// number of published events
+	publishedEvents int64
 }
 
 func NewStream(name string, group *Group, client cloudwatchlogsiface.CloudWatchLogsAPI,
@@ -110,6 +113,8 @@ func (stream *Stream) Monitor() {
 		return
 	}
 
+	ticker := time.NewTicker(reportFrequency)
+
 	for {
 		err := stream.Next()
 		if err != nil {
@@ -118,12 +123,20 @@ func (stream *Stream) Monitor() {
 		select {
 		case <-stream.expired:
 			return
+		case <-ticker.C:
+			stream.report()
 		default:
 			//noop
 		}
 		// TODO: Revise if this is needed and what its value should be
 		time.Sleep(500 * time.Millisecond)
 	}
+}
+
+func (stream *Stream) report() {
+	logp.Info("report[stream] %s/%s processed %d events in the last %s",
+		stream.Group.Name, stream.Name, stream.publishedEvents, reportFrequency)
+	stream.publishedEvents = 0
 }
 
 // fills the buffer's contents into the event,
@@ -135,6 +148,7 @@ func (stream *Stream) publish(event *Event) {
 	event.Message = stream.Buffer.String()
 	stream.Publisher.Publish(event)
 	stream.Buffer.Reset()
+	stream.publishedEvents++
 }
 
 func (stream *Stream) digest(streamEvent *cloudwatchlogs.OutputLogEvent) {

@@ -19,6 +19,9 @@ import (
 	"github.com/elastic/beats/libbeat/publisher"
 )
 
+// global report variable
+var reportFrequency = 5 * time.Minute
+
 // Our cloud beat
 type Cloudwatchlogsbeat struct {
 	// Used to terminate process
@@ -49,6 +52,11 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	config := config.Config{}
 	if err := cfg.Unpack(&config); err != nil {
 		return nil, fmt.Errorf("Error reading config file: %v", err)
+	}
+
+	// Update report frequency
+	if config.ReportFrequency > 0 {
+		reportFrequency = config.ReportFrequency
 	}
 
 	// Create AWS session
@@ -95,7 +103,7 @@ func (beat *Cloudwatchlogsbeat) Run(b *beat.Beat) error {
 	logp.Info("cloudwatchlogsbeat is running! Hit CTRL-C to stop it.")
 
 	beat.Client = b.Publisher.Connect()
-	ticker := time.NewTicker(beat.Config.GroupRefreshPeriod)
+	ticker := time.NewTicker(beat.Config.GroupRefreshFrequency)
 
 	for {
 		select {

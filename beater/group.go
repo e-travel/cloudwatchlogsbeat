@@ -19,7 +19,9 @@ type Group struct {
 	Beat       *Cloudwatchlogsbeat
 	Streams    map[string]*Stream
 	// we'll use this mutex to synchronize access to the Streams map
-	mutex *sync.RWMutex
+	mutex          *sync.RWMutex
+	newStreams     int
+	removedStreams int
 }
 
 func NewGroup(name string, prospector *config.Prospector, beat *Cloudwatchlogsbeat) *Group {
@@ -83,6 +85,7 @@ func (group *Group) removeStream(stream *Stream) {
 	group.mutex.Lock()
 	delete(group.Streams, stream.Name)
 	group.mutex.Unlock()
+	group.removedStreams++
 }
 
 func (group *Group) addNewStream(name string) {
@@ -98,12 +101,26 @@ func (group *Group) addNewStream(name string) {
 		<-finished
 		group.removeStream(stream)
 	}()
+	group.newStreams++
 }
 
 func (group *Group) Monitor() {
 	logp.Info("Monitoring group %s", group.Name)
+	reportTicker := time.NewTicker(reportFrequency)
+	streamRefreshTicker := time.NewTicker(group.Beat.Config.StreamRefreshFrequency)
 	for {
+		select {
+		case <-streamRefreshTicker.C:
+		case <-reportTicker.C:
+			group.report()
+		}
 		group.RefreshStreams()
-		time.Sleep(group.Beat.Config.StreamRefreshPeriod)
 	}
+}
+
+func (group *Group) report() {
+	n := len(group.Streams)
+	logp.Info("report[group] %s: %d streams under monitoring / %d streams added / %d streams removed during the last %s", group.Name, n, group.newStreams, group.removedStreams, reportFrequency)
+	group.newStreams = 0
+	group.removedStreams = 0
 }

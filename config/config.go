@@ -16,11 +16,11 @@ type Prospector struct {
 }
 
 type Config struct {
-	GroupRefreshPeriod  time.Duration `config:"group_refresh_period"`
-	StreamRefreshPeriod time.Duration `config:"stream_refresh_period"`
-	GroupNames          []string      `config:"groupnames"`
-	DynamoDBTableName   string        `config:"dynamodb_table_name"`
-	S3BucketName        string        `config:"s3_bucket_name"`
-	AWSRegion           string        `config:"aws_region"`
-	Prospectors         []Prospector  `config:"prospectors"`
+	GroupRefreshFrequency  time.Duration `config:"group_refresh_frequency"`
+	StreamRefreshFrequency time.Duration `config:"stream_refresh_frequency"`
+	ReportFrequency        time.Duration `config:"report_frequency"`
+	GroupNames             []string      `config:"groupnames"`
+	S3BucketName           string        `config:"s3_bucket_name"`
+	AWSRegion              string        `config:"aws_region"`
+	Prospectors            []Prospector  `config:"prospectors"`
 }
