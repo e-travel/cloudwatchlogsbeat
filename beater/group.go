@@ -57,7 +57,7 @@ func (group *Group) RefreshStreams() {
 				group.mutex.RUnlock()
 				// is this an empty stream?
 				if logStream.LastEventTimestamp == nil {
-					logp.Warn("We have a nil stream timestamp (%s/%s) %v", group.Name, name, *logStream)
+					logp.Warn("Nil timestamp found (%s/%s)", group.Name, name)
 					continue
 				}
 				// is the stream expired?
