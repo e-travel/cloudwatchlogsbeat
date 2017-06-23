@@ -1,7 +1,6 @@
 package beater
 
 import (
-	"sync"
 	"time"
 
 	"github.com/e-travel/cloudwatchlogsbeat/config"
@@ -13,13 +12,11 @@ import (
 )
 
 type Group struct {
-	Name       string
-	Prospector *config.Prospector
-	Client     cloudwatchlogsiface.CloudWatchLogsAPI
-	Beat       *Cloudwatchlogsbeat
-	Streams    map[string]*Stream
-	// we'll use this mutex to synchronize access to the Streams map
-	mutex          *sync.RWMutex
+	Name           string
+	Prospector     *config.Prospector
+	Client         cloudwatchlogsiface.CloudWatchLogsAPI
+	Beat           *Cloudwatchlogsbeat
+	Streams        map[string]*Stream
 	newStreams     int
 	removedStreams int
 }
@@ -31,7 +28,6 @@ func NewGroup(name string, prospector *config.Prospector, beat *Cloudwatchlogsbe
 		Client:     beat.AWSClient,
 		Beat:       beat,
 		Streams:    make(map[string]*Stream),
-		mutex:      &sync.RWMutex{},
 	}
 }
 
@@ -54,9 +50,7 @@ func (group *Group) RefreshStreams() {
 			for _, logStream := range page.LogStreams {
 				name := aws.StringValue(logStream.LogStreamName)
 				// are we monitoring the stream already?
-				group.mutex.RLock()
 				stream, ok := group.Streams[name]
-				group.mutex.RUnlock()
 				// is this an empty stream?
 				if logStream.LastEventTimestamp == nil {
 					logp.Debug("GROUP", "%s/%s has a nil timestamp", group.Name, name)
@@ -82,9 +76,7 @@ func (group *Group) RefreshStreams() {
 
 func (group *Group) removeStream(stream *Stream) {
 	logp.Info("Stop monitoring stream %s for group %s", stream.Name, group.Name)
-	group.mutex.Lock()
 	delete(group.Streams, stream.Name)
-	group.mutex.Unlock()
 	group.removedStreams++
 }
 
@@ -93,9 +85,7 @@ func (group *Group) addNewStream(name string) {
 	expired := make(chan bool)
 	stream := NewStream(name, group, group.Client, group.Beat.Registry, finished, expired)
 	logp.Info("Start monitoring stream %s for group %s", stream.Name, group.Name)
-	group.mutex.Lock()
 	group.Streams[name] = stream
-	group.mutex.Unlock()
 	go stream.Monitor()
 	go func() {
 		<-finished
