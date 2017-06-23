@@ -75,7 +75,6 @@ func (group *Group) RefreshStreams() {
 }
 
 func (group *Group) removeStream(stream *Stream) {
-	logp.Info("Stop monitoring stream %s for group %s", stream.Name, group.Name)
 	delete(group.Streams, stream.Name)
 	group.removedStreams++
 }
@@ -84,7 +83,6 @@ func (group *Group) addNewStream(name string) {
 	finished := make(chan bool)
 	expired := make(chan bool)
 	stream := NewStream(name, group, group.Client, group.Beat.Registry, finished, expired)
-	logp.Info("Start monitoring stream %s for group %s", stream.Name, group.Name)
 	group.Streams[name] = stream
 	go stream.Monitor()
 	go func() {
@@ -95,7 +93,8 @@ func (group *Group) addNewStream(name string) {
 }
 
 func (group *Group) Monitor() {
-	logp.Info("Monitoring group %s", group.Name)
+	logp.Info("[group] %s started", group.Name)
+	defer logp.Info("[group] %s stopped", group.Name)
 	reportTicker := time.NewTicker(reportFrequency)
 	defer reportTicker.Stop()
 	streamRefreshTicker := time.NewTicker(group.Beat.Config.StreamRefreshFrequency)

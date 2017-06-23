@@ -104,6 +104,9 @@ func (stream *Stream) Next() error {
 // encountered, monitoring will stop and the stream will send an event
 // to the finished channel for the group to cleanup
 func (stream *Stream) Monitor() {
+	logp.Info("[stream] %s started", stream.FullName())
+	defer logp.Info("[stream] %s stopped", stream.FullName())
+
 	defer func() {
 		stream.finished <- true
 	}()
