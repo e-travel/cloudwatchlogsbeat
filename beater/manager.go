@@ -2,6 +2,7 @@ package beater
 
 import (
 	"strings"
+	"time"
 
 	"github.com/e-travel/cloudwatchlogsbeat/config"
 
@@ -67,5 +68,20 @@ func (manager *GroupManager) addNewGroup(name string, prospector *config.Prospec
 }
 
 func (manager *GroupManager) Monitor() {
-	manager.refreshGroups()
+	ticker := time.NewTicker(manager.beat.Config.GroupRefreshFrequency)
+	defer ticker.Stop()
+	reportTicker := time.NewTicker(reportFrequency)
+	defer reportTicker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			manager.refreshGroups()
+		case <-reportTicker.C:
+			manager.report()
+		}
+	}
+}
+
+func (manager *GroupManager) report() {
+	logp.Info("report[manager] %d %d", len(manager.prospectors), len(manager.groups))
 }

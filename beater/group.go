@@ -113,10 +113,10 @@ func (group *Group) Monitor() {
 	for {
 		select {
 		case <-streamRefreshTicker.C:
+			group.RefreshStreams()
 		case <-reportTicker.C:
 			group.report()
 		}
-		group.RefreshStreams()
 	}
 }
 

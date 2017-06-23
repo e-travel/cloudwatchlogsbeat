@@ -103,28 +103,15 @@ func (beat *Cloudwatchlogsbeat) Run(b *beat.Beat) error {
 	logp.Info("cloudwatchlogsbeat is running! Hit CTRL-C to stop it.")
 
 	beat.Client = b.Publisher.Connect()
-	ticker := time.NewTicker(beat.Config.GroupRefreshFrequency)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-beat.Done:
-			return nil
-		case <-ticker.C:
-		}
-		beat.Process()
-	}
+	go beat.Manager.Monitor()
+	<-beat.Done
+	return nil
 }
 
 // Stops beat client
 func (beat *Cloudwatchlogsbeat) Stop() {
 	beat.Client.Close()
 	close(beat.Done)
-}
-
-// Processes each prospector of our cloud beat
-func (beat *Cloudwatchlogsbeat) Process() {
-	beat.Manager.Monitor()
 }
 
 // Performs basic validation for our configuration, like our
