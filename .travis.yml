@@ -8,7 +8,7 @@ install: true
 
 script:
   - go build -v
-  - go test -v -cpu 1 ./test
+  - go test -v -cpu 1 -cover ./beater
 
 branches:
   only:
