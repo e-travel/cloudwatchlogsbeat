@@ -1,9 +1,7 @@
-package test
+package beater
 
 import (
 	"time"
-
-	"github.com/e-travel/cloudwatchlogsbeat/beater"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -13,11 +11,11 @@ import (
 // Our mock registry
 type MockRegistry struct{}
 
-var stubRegistryRead func(*beater.Stream) error
-var stubRegistryWrite func(*beater.Stream) error
+var stubRegistryRead func(*Stream) error
+var stubRegistryWrite func(*Stream) error
 
-func (MockRegistry) ReadStreamInfo(*beater.Stream) error  { return stubRegistryRead(stream) }
-func (MockRegistry) WriteStreamInfo(*beater.Stream) error { return stubRegistryWrite(stream) }
+func (MockRegistry) ReadStreamInfo(*Stream) error  { return stubRegistryRead(stream) }
+func (MockRegistry) WriteStreamInfo(*Stream) error { return stubRegistryWrite(stream) }
 
 // Our mock AWS CloudWatchLogs client
 type MockCWLClient struct {
@@ -43,9 +41,9 @@ type MockPublisher struct{}
 
 var mockPublisher = MockPublisher{}
 
-var stubPublish func(event *beater.Event)
+var stubPublish func(event *Event)
 
-func (publisher MockPublisher) Publish(event *beater.Event) {
+func (publisher MockPublisher) Publish(event *Event) {
 	stubPublish(event)
 }
 

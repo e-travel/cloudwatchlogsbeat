@@ -1,10 +1,9 @@
-package test
+package beater
 
 import (
 	"testing"
 	"time"
 
-	"github.com/e-travel/cloudwatchlogsbeat/beater"
 	"github.com/e-travel/cloudwatchlogsbeat/config"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -15,10 +14,10 @@ import (
 
 func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
-	group := &beater.Group{
+	group := &Group{
 		Name:       "group",
 		Prospector: &config.Prospector{},
 	}
@@ -37,16 +36,16 @@ func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 		}, nil
 	}
 
-	events := []*beater.Event{}
+	events := []*Event{}
 
 	// stub the publisher
-	stubPublish = func(event *beater.Event) {
+	stubPublish = func(event *Event) {
 		// add the event to the actual events
 		events = append(events, event)
 	}
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
+	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
 	stream.Publisher = MockPublisher{}
 	// fire!
 	stream.Next()
@@ -57,10 +56,10 @@ func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 // test stream cleanup (a message will be sent to the finished channel)
 func Test_StreamShouldSendACleanupEvent_OnError(t *testing.T) {
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
-	group := &beater.Group{
+	group := &Group{
 		Name:       "group",
 		Prospector: &config.Prospector{},
 	}
@@ -74,7 +73,7 @@ func Test_StreamShouldSendACleanupEvent_OnError(t *testing.T) {
 	finished := make(chan bool)
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, finished, make(chan bool))
+	stream := NewStream("TestStream", group, client, &MockRegistry{}, finished, make(chan bool))
 	// fire!
 	go stream.Monitor()
 	// capture and assert the event
@@ -84,10 +83,10 @@ func Test_StreamShouldSendACleanupEvent_OnError(t *testing.T) {
 // test that the recovery will pick up from where we were (through mocked registry)
 func Test_StreamShouldSendACleanupEvent_OnReceiving_AnExpirationEvent(t *testing.T) {
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
-	group := &beater.Group{
+	group := &Group{
 		Name:       "group",
 		Prospector: &config.Prospector{},
 	}
@@ -104,7 +103,7 @@ func Test_StreamShouldSendACleanupEvent_OnReceiving_AnExpirationEvent(t *testing
 	expired := make(chan bool)
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, finished, expired)
+	stream := NewStream("TestStream", group, client, &MockRegistry{}, finished, expired)
 	// fire!
 	go stream.Monitor()
 	// send the expiration event
@@ -115,7 +114,7 @@ func Test_StreamShouldSendACleanupEvent_OnReceiving_AnExpirationEvent(t *testing
 
 func Test_StreamParams_HaveTheCorrectStartTime(t *testing.T) {
 	horizon := time.Hour
-	group := &beater.Group{
+	group := &Group{
 		Name: "group",
 		Prospector: &config.Prospector{
 			StreamLastEventHorizon: horizon,
@@ -123,7 +122,7 @@ func Test_StreamParams_HaveTheCorrectStartTime(t *testing.T) {
 	}
 
 	// create the stream
-	stream := beater.NewStream("TestStream", group, nil, nil, nil, nil)
+	stream := NewStream("TestStream", group, nil, nil, nil, nil)
 	// create the events
 	event1 := CreateOutputLogEventWithTimestamp("Event 1\n", TimeBeforeNowInMilliseconds(2*time.Hour))
 	event2 := CreateOutputLogEventWithTimestamp("Event 2\n", TimeBeforeNowInMilliseconds(30*time.Minute))

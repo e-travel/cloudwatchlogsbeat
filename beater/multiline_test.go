@@ -1,10 +1,9 @@
-package test
+package beater
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/e-travel/cloudwatchlogsbeat/beater"
 	"github.com/e-travel/cloudwatchlogsbeat/config"
 
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -26,10 +25,10 @@ var allEvents = []*cloudwatchlogs.OutputLogEvent{
 
 func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
-	group := &beater.Group{
+	group := &Group{
 		Name: "group",
 	}
 
@@ -54,14 +53,14 @@ func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 	}
 
 	// mock the publisher
-	stubPublish = func(event *beater.Event) {
+	stubPublish = func(event *Event) {
 		expectedMessage := createExpectedMessage(events)
 		assert.Equal(t, expectedMessage, event.Message)
 	}
 
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
+	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
 	stream.Publisher = MockPublisher{}
 	// fire!
 	stream.Next()
@@ -71,10 +70,10 @@ func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 
 func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
-	group := &beater.Group{
+	group := &Group{
 		Name: "group",
 	}
 
@@ -99,7 +98,7 @@ func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 	}
 
 	// mock the publisher
-	stubPublish = func(event *beater.Event) {
+	stubPublish = func(event *Event) {
 		// test our event
 		expectedMessage := createExpectedMessage(events)
 		assert.Equal(t, expectedMessage, event.Message)
@@ -107,7 +106,7 @@ func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
+	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
 	stream.Publisher = MockPublisher{}
 	// fire!
 	stream.Next()
@@ -117,10 +116,10 @@ func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 
 func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
-	group := &beater.Group{
+	group := &Group{
 		Name: "group",
 	}
 
@@ -151,7 +150,7 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 	}
 
 	// mock the publisher
-	stubPublish = func(event *beater.Event) {
+	stubPublish = func(event *Event) {
 		// test our event
 		expectedMessage := createExpectedMessage(events)
 		assert.Equal(t, expectedMessage, event.Message)
@@ -159,7 +158,7 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
+	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
 	stream.Publisher = MockPublisher{}
 	// fire!
 	stream.Next()
@@ -170,10 +169,10 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 
 func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
-	group := &beater.Group{
+	group := &Group{
 		Name: "group",
 	}
 
@@ -204,7 +203,7 @@ func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
 	}
 
 	// mock the publisher
-	stubPublish = func(event *beater.Event) {
+	stubPublish = func(event *Event) {
 		// test our event
 		expectedMessage := createExpectedMessage(events)
 		assert.Equal(t, expectedMessage, event.Message)
@@ -212,7 +211,7 @@ func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
 
 	// create the stream
 	client := &MockCWLClient{}
-	stream := beater.NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
+	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool), make(chan bool))
 	stream.Publisher = MockPublisher{}
 	// fire!
 	stream.Next()

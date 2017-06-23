@@ -1,4 +1,4 @@
-package test
+package beater
 
 import (
 	"testing"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/e-travel/cloudwatchlogsbeat/beater"
 	"github.com/e-travel/cloudwatchlogsbeat/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,11 +17,11 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 	prospector := &config.Prospector{
 		StreamLastEventHorizon: horizon,
 	}
-	beat := &beater.Cloudwatchlogsbeat{
+	beat := &Cloudwatchlogsbeat{
 		AWSClient: &MockCWLClient{},
 		Registry:  &MockRegistry{},
 	}
-	group := beater.NewGroup("group", prospector, beat)
+	group := NewGroup("group", prospector, beat)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			&cloudwatchlogs.LogStream{
@@ -43,8 +42,8 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 		}, nil
 	}
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
 	// go!
 	group.RefreshStreams()
@@ -60,11 +59,11 @@ func Test_Group_WillRemove_ExpiredStream(t *testing.T) {
 	prospector := &config.Prospector{
 		StreamLastEventHorizon: horizon,
 	}
-	beat := &beater.Cloudwatchlogsbeat{
+	beat := &Cloudwatchlogsbeat{
 		AWSClient: &MockCWLClient{},
 		Registry:  &MockRegistry{},
 	}
-	group := beater.NewGroup("group", prospector, beat)
+	group := NewGroup("group", prospector, beat)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			&cloudwatchlogs.LogStream{
@@ -85,8 +84,8 @@ func Test_Group_WillRemove_ExpiredStream(t *testing.T) {
 		}, nil
 	}
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
 	// this will add the stream
 	group.RefreshStreams()
@@ -117,11 +116,11 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 	prospector := &config.Prospector{
 		StreamLastEventHorizon: horizon,
 	}
-	beat := &beater.Cloudwatchlogsbeat{
+	beat := &Cloudwatchlogsbeat{
 		AWSClient: &MockCWLClient{},
 		Registry:  &MockRegistry{},
 	}
-	group := beater.NewGroup("group", prospector, beat)
+	group := NewGroup("group", prospector, beat)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			&cloudwatchlogs.LogStream{
@@ -142,8 +141,8 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 		}, nil
 	}
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
 	// go!
 	group.RefreshStreams()
@@ -157,11 +156,11 @@ func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
 	prospector := &config.Prospector{
 		StreamLastEventHorizon: horizon,
 	}
-	beat := &beater.Cloudwatchlogsbeat{
+	beat := &Cloudwatchlogsbeat{
 		AWSClient: &MockCWLClient{},
 		Registry:  &MockRegistry{},
 	}
-	group := beater.NewGroup("group", prospector, beat)
+	group := NewGroup("group", prospector, beat)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			// the problematic stream
@@ -181,8 +180,8 @@ func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
 		return nil
 	}
 	// stub the registry functions
-	stubRegistryRead = func(*beater.Stream) error { return nil }
-	stubRegistryWrite = func(*beater.Stream) error { return nil }
+	stubRegistryRead = func(*Stream) error { return nil }
+	stubRegistryWrite = func(*Stream) error { return nil }
 
 	// go!
 	group.RefreshStreams()

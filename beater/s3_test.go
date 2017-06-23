@@ -1,12 +1,10 @@
-package test
+package beater
 
 import (
 	"bytes"
 	"errors"
 	"io"
 	"testing"
-
-	"github.com/e-travel/cloudwatchlogsbeat/beater"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -40,10 +38,10 @@ type S3ItemBody struct {
 
 func (S3ItemBody) Close() error { return nil }
 
-var group = &beater.Group{
+var group = &Group{
 	Name: "group",
 }
-var stream = &beater.Stream{
+var stream = &Stream{
 	Name:   "stream",
 	Group:  group,
 	Params: &cloudwatchlogs.GetLogEventsInput{},
@@ -54,7 +52,7 @@ func Test_ReadStreamInfo_WhenGetObjectNotFound_ReturnsNil(t *testing.T) {
 		return nil, awserr.New(s3.ErrCodeNoSuchKey, "Does not exist", nil)
 	}
 	client := &mockS3Client{}
-	registry := beater.NewS3Registry(client, "the_bucket_name")
+	registry := NewS3Registry(client, "the_bucket_name")
 	err := registry.ReadStreamInfo(stream)
 	assert.Nil(t, err)
 }
@@ -64,7 +62,7 @@ func Test_ReadStreamInfo_WhenBucketDoesNotExist_ReturnsError(t *testing.T) {
 		return nil, awserr.New(s3.ErrCodeNoSuchBucket, "Does not exist", nil)
 	}
 	client := &mockS3Client{}
-	registry := beater.NewS3Registry(client, "the_bucket_name")
+	registry := NewS3Registry(client, "the_bucket_name")
 	err := registry.ReadStreamInfo(stream).(awserr.Error)
 	assert.Equal(t, s3.ErrCodeNoSuchBucket, err.Code())
 }
@@ -79,7 +77,7 @@ func Test_ReadStreamInfo_WhenItemExists_ShouldUpdateStream(t *testing.T) {
 		}, nil
 	}
 	client := &mockS3Client{}
-	registry := beater.NewS3Registry(client, "the_bucket_name")
+	registry := NewS3Registry(client, "the_bucket_name")
 	err := registry.ReadStreamInfo(stream)
 	assert.Nil(t, err)
 	assert.Equal(t, "abcde", *stream.Params.NextToken)
@@ -100,7 +98,7 @@ func Test_WriteStreamInfo_ShouldReturnNil_OnSuccess(t *testing.T) {
 		return nil, nil
 	}
 	client := &mockS3Client{}
-	registry := beater.NewS3Registry(client, "the_bucket_name")
+	registry := NewS3Registry(client, "the_bucket_name")
 	registry.WriteStreamInfo(stream)
 }
 
@@ -110,7 +108,7 @@ func Test_WriteStreamInfo_ShouldReturnError_OnError(t *testing.T) {
 		return nil, errors.New("S3 Error")
 	}
 	client := &mockS3Client{}
-	registry := beater.NewS3Registry(client, "the_bucket_name")
+	registry := NewS3Registry(client, "the_bucket_name")
 	err := registry.WriteStreamInfo(stream)
 	assert.Equal(t, "S3 Error", err.Error())
 }
