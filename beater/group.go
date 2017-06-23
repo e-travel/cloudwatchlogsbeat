@@ -70,7 +70,7 @@ func (group *Group) RefreshStreams() {
 			return true
 		})
 	if err != nil {
-		logp.Err("Failed to fetch streams for group %s", group.Name)
+		logp.Err("%s %s", group.Name, err.Error())
 	}
 }
 

@@ -2,6 +2,7 @@ package beater
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -113,18 +114,19 @@ func (stream *Stream) Monitor() {
 		return
 	}
 
-	ticker := time.NewTicker(reportFrequency)
-	defer ticker.Stop()
+	reportTicker := time.NewTicker(reportFrequency)
+	defer reportTicker.Stop()
 
 	for {
 		err := stream.Next()
 		if err != nil {
+			logp.Err("%s %s", stream.FullName(), err.Error())
 			return
 		}
 		select {
 		case <-stream.expired:
 			return
-		case <-ticker.C:
+		case <-reportTicker.C:
 			stream.report()
 		default:
 			// TODO: Revise if this is needed and what its value should be
@@ -135,9 +137,13 @@ func (stream *Stream) Monitor() {
 }
 
 func (stream *Stream) report() {
-	logp.Info("report[stream] %d %s/%s %s",
-		stream.publishedEvents, stream.Group.Name, stream.Name, reportFrequency)
+	logp.Info("report[stream] %d %s %s",
+		stream.publishedEvents, stream.FullName(), reportFrequency)
 	stream.publishedEvents = 0
+}
+
+func (stream *Stream) FullName() string {
+	return fmt.Sprintf("%s/%s", stream.Group.Name, stream.Name)
 }
 
 // fills the buffer's contents into the event,
