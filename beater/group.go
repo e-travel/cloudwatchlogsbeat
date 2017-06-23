@@ -107,7 +107,9 @@ func (group *Group) addNewStream(name string) {
 func (group *Group) Monitor() {
 	logp.Info("Monitoring group %s", group.Name)
 	reportTicker := time.NewTicker(reportFrequency)
+	defer reportTicker.Stop()
 	streamRefreshTicker := time.NewTicker(group.Beat.Config.StreamRefreshFrequency)
+	defer streamRefreshTicker.Stop()
 	for {
 		select {
 		case <-streamRefreshTicker.C:

@@ -104,6 +104,7 @@ func (beat *Cloudwatchlogsbeat) Run(b *beat.Beat) error {
 
 	beat.Client = b.Publisher.Connect()
 	ticker := time.NewTicker(beat.Config.GroupRefreshFrequency)
+	defer ticker.Stop()
 
 	for {
 		select {

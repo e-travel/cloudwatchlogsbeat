@@ -114,6 +114,7 @@ func (stream *Stream) Monitor() {
 	}
 
 	ticker := time.NewTicker(reportFrequency)
+	defer ticker.Stop()
 
 	for {
 		err := stream.Next()
@@ -126,10 +127,10 @@ func (stream *Stream) Monitor() {
 		case <-ticker.C:
 			stream.report()
 		default:
-			//noop
+			// TODO: Revise if this is needed and what its value should be
+			//       Use a ticker instead of Sleep
+			time.Sleep(500 * time.Millisecond)
 		}
-		// TODO: Revise if this is needed and what its value should be
-		time.Sleep(500 * time.Millisecond)
 	}
 }
 
