@@ -106,11 +106,12 @@ func (stream *Stream) Next() error {
 // to the finished channel for the group to cleanup
 func (stream *Stream) Monitor() {
 	logp.Info("[stream] %s started", stream.FullName())
-	defer logp.Info("[stream] %s stopped", stream.FullName())
 
 	defer func() {
 		stream.finished <- true
 	}()
+
+	defer logp.Info("[stream] %s stopped", stream.FullName())
 
 	// first of all, read the stream's info from our registry storage
 	err := stream.Registry.ReadStreamInfo(stream)
