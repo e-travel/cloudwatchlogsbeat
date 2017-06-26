@@ -38,12 +38,6 @@ func (group *Group) RefreshStreams() {
 		OrderBy:      aws.String("LastEventTime"),
 	}
 
-	timeHorizon := time.Now().UTC().Add(-group.Prospector.StreamLastEventHorizon)
-
-	isStreamExpired := func(lastEventTimestamp *int64) bool {
-		return ToTime(*lastEventTimestamp).Before(timeHorizon)
-	}
-
 	err := group.Client.DescribeLogStreamsPages(
 		params,
 		func(page *cloudwatchlogs.DescribeLogStreamsOutput, lastPage bool) bool {
@@ -57,7 +51,9 @@ func (group *Group) RefreshStreams() {
 					continue
 				}
 				// is the stream expired?
-				expired := isStreamExpired(logStream.LastEventTimestamp)
+				expired := IsBefore(group.Prospector.StreamLastEventHorizon,
+					*logStream.LastEventTimestamp)
+				//expired := isStreamExpired(timeHorizon, logStream.LastEventTimestamp)
 				// is this a stream that we're monitoring and it has expired?
 				if ok && expired {
 					stream.expired <- true

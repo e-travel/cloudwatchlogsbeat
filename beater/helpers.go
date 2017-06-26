@@ -41,3 +41,9 @@ func ValidateMultiline(multiline *config.Multiline) {
 		panic("Configuration: Invalid match type in multiline mode: " + match)
 	}
 }
+
+// returns true if the event timestamp is before the specified horizon
+func IsBefore(horizon time.Duration, lastEventTimestamp int64) bool {
+	horizonTimestamp := time.Now().UTC().Add(-horizon)
+	return ToTime(lastEventTimestamp).Before(horizonTimestamp)
+}
