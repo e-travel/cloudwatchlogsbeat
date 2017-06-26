@@ -140,7 +140,7 @@ func (stream *Stream) Monitor() {
 			//       Use a ticker instead of Sleep
 			//       Make more adaptive (wrt to how old this is and the probability
 			//       of receiving more data)
-			time.Sleep(time.Second)
+			time.Sleep(500 * time.Millisecond)
 		}
 	}
 }
