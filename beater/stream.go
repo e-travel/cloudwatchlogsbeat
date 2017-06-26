@@ -32,16 +32,16 @@ type Stream struct {
 	MultiRegex *regexp.Regexp
 	// the publisher for our events
 	Publisher EventPublisher
+	// the last event that we've processed (in milliseconds since 1970)
+	LastEventTimestamp int64
 	// channel for the stream to signal that its processing is over
 	finished chan<- bool
-	// channel for the stream to be notified that it has expired
-	expired chan bool
 	// number of published events
 	publishedEvents int64
 }
 
 func NewStream(name string, group *Group, client cloudwatchlogsiface.CloudWatchLogsAPI,
-	registry Registry, finished chan<- bool, expired chan bool) *Stream {
+	registry Registry, finished chan<- bool) *Stream {
 
 	startTime := time.Now().UTC().Add(-group.Prospector.StreamLastEventHorizon)
 
@@ -54,15 +54,15 @@ func NewStream(name string, group *Group, client cloudwatchlogsiface.CloudWatchL
 	}
 
 	stream := &Stream{
-		Name:      name,
-		Group:     group,
-		Client:    client,
-		Params:    params,
-		Registry:  registry,
-		Multiline: group.Prospector.Multiline,
-		Publisher: Publisher{},
-		finished:  finished,
-		expired:   expired,
+		Name:               name,
+		Group:              group,
+		Client:             client,
+		Params:             params,
+		Registry:           registry,
+		Multiline:          group.Prospector.Multiline,
+		Publisher:          Publisher{},
+		finished:           finished,
+		LastEventTimestamp: 1000 * time.Now().Unix(),
 	}
 
 	// Construct regular expression if multiline mode
@@ -94,6 +94,7 @@ func (stream *Stream) Next() error {
 	// process the events
 	for _, streamEvent := range output.Events {
 		stream.digest(streamEvent)
+		stream.LastEventTimestamp = aws.Int64Value(streamEvent.Timestamp)
 	}
 	stream.Params.NextToken = output.NextForwardToken
 	err = stream.Registry.WriteStreamInfo(stream)
@@ -126,14 +127,18 @@ func (stream *Stream) Monitor() {
 			logp.Err("%s %s", stream.FullName(), err.Error())
 			return
 		}
-		select {
-		case <-stream.expired:
+		// is the stream expired?
+		if IsBefore(stream.Group.Prospector.StreamLastEventHorizon, stream.LastEventTimestamp) {
 			return
+		}
+		select {
 		case <-reportTicker.C:
 			stream.report()
 		default:
 			// TODO: Revise if this is needed and what its value should be
 			//       Use a ticker instead of Sleep
+			//       Make more adaptive (wrt to how old this is and the probability
+			//       of receiving more data)
 			time.Sleep(500 * time.Millisecond)
 		}
 	}

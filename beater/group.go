@@ -49,7 +49,7 @@ func (group *Group) RefreshStreams() {
 				name := aws.StringValue(logStream.LogStreamName)
 				// are we monitoring the stream already?
 				group.mutex.RLock()
-				stream, ok := group.Streams[name]
+				_, ok := group.Streams[name]
 				group.mutex.RUnlock()
 				// is this an empty stream?
 				if logStream.LastEventTimestamp == nil {
@@ -59,11 +59,6 @@ func (group *Group) RefreshStreams() {
 				// is the stream expired?
 				expired := IsBefore(group.Prospector.StreamLastEventHorizon,
 					*logStream.LastEventTimestamp)
-				//expired := isStreamExpired(timeHorizon, logStream.LastEventTimestamp)
-				// is this a stream that we're monitoring and it has expired?
-				if ok && expired {
-					stream.expired <- true
-				}
 				// is this a stream that we're not monitoring and it is not expired?
 				if !ok && !expired {
 					group.addNewStream(name)
@@ -86,8 +81,7 @@ func (group *Group) removeStream(stream *Stream) {
 
 func (group *Group) addNewStream(name string) {
 	finished := make(chan bool)
-	expired := make(chan bool)
-	stream := NewStream(name, group, group.Client, group.Beat.Registry, finished, expired)
+	stream := NewStream(name, group, group.Client, group.Beat.Registry, finished)
 	logp.Info("Start monitoring stream %s for group %s", stream.Name, group.Name)
 	group.mutex.Lock()
 	group.Streams[name] = stream
