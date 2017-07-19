@@ -3,6 +3,7 @@ language: go
 go:
   - 1.7
   - 1.8
+  - master
 
 install: true
 
@@ -13,3 +14,4 @@ script:
 branches:
   only:
     - master
+    - test-refactoring
