@@ -8,20 +8,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
-
-// our example events
-var allEvents = []*cloudwatchlogs.OutputLogEvent{
-	CreateOutputLogEvent("START RequestId: aaa-bbb Version: $LATEST\n"),
-	CreateOutputLogEvent("2017-06-12T10:09:46.650Z aaa-bbb [Info] Hello\n"),
-	CreateOutputLogEvent("REPORT RequestId: aaa-bbb Duration: 1.27 ms\n"),
-	CreateOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
-	CreateOutputLogEvent("2017-06-12T10:09:47.650Z aaa-ccc [Info] Goodbye\n"),
-	CreateOutputLogEvent("REPORT RequestId: aaa-ccc Duration: 1.46 ms\n"),
-	CreateOutputLogEvent("START RequestId: aaa-ddd Version: $LATEST\n"),
-	CreateOutputLogEvent("2017-06-12T10:09:49.650Z aaa-ddd [Info] Goodbye\n"),
-	CreateOutputLogEvent("REPORT RequestId: aaa-ddd Duration: 1.52 ms\n"),
-}
 
 func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 	// stub the registry functions
@@ -43,25 +31,30 @@ func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 	}
 	group.Prospector = prospector
 	// create the events that we expect
-	events := allEvents[0:4]
-
-	// stub our function to return the events specified in this test
-	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
-		return &cloudwatchlogs.GetLogEventsOutput{
-			Events: events,
-		}, nil
-	}
-
-	// mock the publisher
-	stubPublish = func(event *Event) {
-		expectedMessage := createExpectedMessage(events)
-		assert.Equal(t, expectedMessage, event.Message)
+	events := []*cloudwatchlogs.OutputLogEvent{
+		CreateOutputLogEvent("START RequestId: aaa-bbb Version: $LATEST\n"),
+		CreateOutputLogEvent("2017-06-12T10:09:46.650Z aaa-bbb [Info] Hello\n"),
+		CreateOutputLogEvent("REPORT RequestId: aaa-bbb Duration: 1.27 ms\n"),
+		CreateOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
 	}
 
 	// create the stream
 	client := &MockCWLClient{}
 	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
-	stream.Publisher = MockPublisher{}
+	publisher := &MockPublisher{}
+	stream.Publisher = publisher
+	// stub the publisher
+	publisher.On("Publish", mock.AnythingOfType("*beater.Event")).Return().Run(
+		func(args mock.Arguments) {
+			event := args.Get(0).(*Event)
+			expectedMessage := createExpectedMessage(events)
+			assert.Equal(t, expectedMessage, event.Message)
+		})
+	// stub the log events
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		&cloudwatchlogs.GetLogEventsOutput{
+			Events: events,
+		}, nil)
 	// fire!
 	stream.Next()
 	// check remaining buffer
@@ -88,26 +81,30 @@ func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 	}
 	group.Prospector = prospector
 	// create the events that we expect
-	events := allEvents[0:4]
-
-	// stub our function
-	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
-		return &cloudwatchlogs.GetLogEventsOutput{
-			Events: events,
-		}, nil
-	}
-
-	// mock the publisher
-	stubPublish = func(event *Event) {
-		// test our event
-		expectedMessage := createExpectedMessage(events)
-		assert.Equal(t, expectedMessage, event.Message)
+	events := []*cloudwatchlogs.OutputLogEvent{
+		CreateOutputLogEvent("START RequestId: aaa-bbb Version: $LATEST\n"),
+		CreateOutputLogEvent("2017-06-12T10:09:46.650Z aaa-bbb [Info] Hello\n"),
+		CreateOutputLogEvent("REPORT RequestId: aaa-bbb Duration: 1.27 ms\n"),
+		CreateOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
 	}
 
 	// create the stream
 	client := &MockCWLClient{}
 	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
-	stream.Publisher = MockPublisher{}
+	publisher := &MockPublisher{}
+	stream.Publisher = publisher
+	// stub the publisher
+	publisher.On("Publish", mock.AnythingOfType("*beater.Event")).Return().Run(
+		func(args mock.Arguments) {
+			event := args.Get(0).(*Event)
+			expectedMessage := createExpectedMessage(events)
+			assert.Equal(t, expectedMessage, event.Message)
+		})
+	// stub the log events
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		&cloudwatchlogs.GetLogEventsOutput{
+			Events: events,
+		}, nil)
 	// fire!
 	stream.Next()
 	// check remaining buffer
@@ -142,24 +139,18 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 		CreateOutputLogEvent("TAG 11 22 33\n"),
 	}
 
-	// stub our function
-	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
-		return &cloudwatchlogs.GetLogEventsOutput{
-			Events: events,
-		}, nil
-	}
-
-	// mock the publisher
-	stubPublish = func(event *Event) {
-		// test our event
-		expectedMessage := createExpectedMessage(events)
-		assert.Equal(t, expectedMessage, event.Message)
-	}
-
 	// create the stream
 	client := &MockCWLClient{}
 	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
-	stream.Publisher = MockPublisher{}
+	publisher := &MockPublisher{}
+	stream.Publisher = publisher
+	// stub the publisher
+	publisher.On("Publish", mock.AnythingOfType("*beater.Event")).Return()
+	// stub the log events
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		&cloudwatchlogs.GetLogEventsOutput{
+			Events: events,
+		}, nil)
 	// fire!
 	stream.Next()
 
@@ -195,24 +186,18 @@ func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
 		CreateOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
 	}
 
-	// stub our function
-	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
-		return &cloudwatchlogs.GetLogEventsOutput{
-			Events: events,
-		}, nil
-	}
-
-	// mock the publisher
-	stubPublish = func(event *Event) {
-		// test our event
-		expectedMessage := createExpectedMessage(events)
-		assert.Equal(t, expectedMessage, event.Message)
-	}
-
 	// create the stream
 	client := &MockCWLClient{}
 	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
-	stream.Publisher = MockPublisher{}
+	publisher := &MockPublisher{}
+	stream.Publisher = publisher
+	// stub the publisher
+	publisher.On("Publish", mock.AnythingOfType("*beater.Event")).Return()
+	// stub the log events
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		&cloudwatchlogs.GetLogEventsOutput{
+			Events: events,
+		}, nil)
 	// fire!
 	stream.Next()
 

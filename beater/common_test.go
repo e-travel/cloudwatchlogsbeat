@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
+	"github.com/stretchr/testify/mock"
 )
 
 // Our mock registry
@@ -19,14 +20,15 @@ func (MockRegistry) WriteStreamInfo(*Stream) error { return stubRegistryWrite(st
 
 // Our mock AWS CloudWatchLogs client
 type MockCWLClient struct {
+	mock.Mock
 	cloudwatchlogsiface.CloudWatchLogsAPI
 }
 
-// GetLogEvents
-var stubGetLogEvents func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error)
-
 func (client *MockCWLClient) GetLogEvents(input *cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
-	return stubGetLogEvents(input)
+	args := client.Called(input)
+	output, _ := args.Get(0).(*cloudwatchlogs.GetLogEventsOutput)
+	err, _ := args.Get(1).(error)
+	return output, err
 }
 
 // DescribeLogStreamsPages
@@ -37,14 +39,13 @@ func (client *MockCWLClient) DescribeLogStreamsPages(input *cloudwatchlogs.Descr
 }
 
 // our mock publisher
-type MockPublisher struct{}
-
-var mockPublisher = MockPublisher{}
-
-var stubPublish func(event *Event)
+type MockPublisher struct {
+	mock.Mock
+	EventPublisher
+}
 
 func (publisher MockPublisher) Publish(event *Event) {
-	stubPublish(event)
+	publisher.Called(event)
 }
 
 // helper function for creating Events

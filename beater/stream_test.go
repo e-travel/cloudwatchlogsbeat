@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
@@ -29,24 +30,25 @@ func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 		CreateOutputLogEvent("Event 3\n"),
 	}
 
-	// stub our function to return the events specified in this test
-	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
-		return &cloudwatchlogs.GetLogEventsOutput{
-			Events: receivedEvents,
-		}, nil
-	}
-
 	events := []*Event{}
 
-	// stub the publisher
-	stubPublish = func(event *Event) {
-		// add the event to the actual events
-		events = append(events, event)
-	}
 	// create the stream
 	client := &MockCWLClient{}
 	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
-	stream.Publisher = MockPublisher{}
+	publisher := &MockPublisher{}
+	stream.Publisher = publisher
+	// stub the publisher
+	publisher.On("Publish", mock.AnythingOfType("*beater.Event")).Return().Run(
+		func(args mock.Arguments) {
+			event := args.Get(0).(*Event)
+			// add the event to the actual events
+			events = append(events, event)
+		})
+	// stub the log events
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		&cloudwatchlogs.GetLogEventsOutput{
+			Events: receivedEvents,
+		}, nil)
 	// fire!
 	stream.Next()
 	// assert
@@ -59,21 +61,23 @@ func Test_StreamShouldSendACleanupEvent_OnError(t *testing.T) {
 	stubRegistryRead = func(*Stream) error { return nil }
 	stubRegistryWrite = func(*Stream) error { return nil }
 
-	group := &Group{
-		Name:       "group",
-		Prospector: &config.Prospector{},
+	client := &MockCWLClient{}
+	beat := &Cloudwatchlogsbeat{
+		AWSClient: client,
+		Registry:  &MockRegistry{},
 	}
+	group := NewGroup("group", &config.Prospector{}, beat)
 
-	// stub our function to return the error
-	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
-		return nil, awserr.New(cloudwatchlogs.ErrCodeInvalidOperationException, "Error", nil)
-	}
+	// stub GetLogEvents to return the error
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		nil, awserr.New(cloudwatchlogs.ErrCodeInvalidOperationException, "Error", nil))
 
 	// create the finished channel
 	finished := make(chan bool)
-	// create the stream
-	client := &MockCWLClient{}
 	stream := NewStream("TestStream", group, client, &MockRegistry{}, finished)
+	// stub the log events
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		nil, awserr.New(cloudwatchlogs.ErrCodeInvalidOperationException, "Error", nil))
 	// fire!
 	go stream.Monitor()
 	// capture and assert the event

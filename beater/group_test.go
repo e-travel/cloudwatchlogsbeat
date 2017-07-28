@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/e-travel/cloudwatchlogsbeat/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func Test_Group_WillAdd_NewStream(t *testing.T) {
@@ -17,8 +18,9 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 	prospector := &config.Prospector{
 		StreamLastEventHorizon: horizon,
 	}
+	client := &MockCWLClient{}
 	beat := &Cloudwatchlogsbeat{
-		AWSClient: &MockCWLClient{},
+		AWSClient: client,
 		Registry:  &MockRegistry{},
 	}
 	group := NewGroup("group", prospector, beat)
@@ -35,12 +37,12 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 		f(output, false)
 		return nil
 	}
-	// stub our function to return an empty event slice (infinite loop)
-	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
-		return &cloudwatchlogs.GetLogEventsOutput{
+	// stub GetLogEvents to return an empty event slice (infinite loop)
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		&cloudwatchlogs.GetLogEventsOutput{
 			Events: []*cloudwatchlogs.OutputLogEvent{},
-		}, nil
-	}
+		}, nil)
+
 	// stub the registry functions
 	stubRegistryRead = func(*Stream) error { return nil }
 	stubRegistryWrite = func(*Stream) error { return nil }
@@ -59,8 +61,9 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 	prospector := &config.Prospector{
 		StreamLastEventHorizon: horizon,
 	}
+	client := &MockCWLClient{}
 	beat := &Cloudwatchlogsbeat{
-		AWSClient: &MockCWLClient{},
+		AWSClient: client,
 		Registry:  &MockRegistry{},
 	}
 	group := NewGroup("group", prospector, beat)
@@ -77,12 +80,12 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 		f(output, false)
 		return nil
 	}
-	// stub our function to return an empty event slice (infinite loop)
-	stubGetLogEvents = func(*cloudwatchlogs.GetLogEventsInput) (*cloudwatchlogs.GetLogEventsOutput, error) {
-		return &cloudwatchlogs.GetLogEventsOutput{
+	// stub GetLogEvents to return an empty event slice (infinite loop)
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		&cloudwatchlogs.GetLogEventsOutput{
 			Events: []*cloudwatchlogs.OutputLogEvent{},
-		}, nil
-	}
+		}, nil)
+
 	// stub the registry functions
 	stubRegistryRead = func(*Stream) error { return nil }
 	stubRegistryWrite = func(*Stream) error { return nil }
