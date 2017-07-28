@@ -39,11 +39,12 @@ func (client *MockCWLClient) GetLogEvents(input *cloudwatchlogs.GetLogEventsInpu
 	return output, err
 }
 
-// DescribeLogStreamsPages
-var stubDescribeLogStreamsPages func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error
+func (client *MockCWLClient) DescribeLogStreamsPages(input *cloudwatchlogs.DescribeLogStreamsInput,
+	f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
 
-func (client *MockCWLClient) DescribeLogStreamsPages(input *cloudwatchlogs.DescribeLogStreamsInput, f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
-	return stubDescribeLogStreamsPages(f)
+	args := client.Called(input, f)
+	err, _ := args.Get(0).(error)
+	return err
 }
 
 // our mock publisher

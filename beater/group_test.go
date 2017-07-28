@@ -35,11 +35,17 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 			},
 		},
 	}
-	// stub our function to return the output
-	stubDescribeLogStreamsPages = func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
-		f(output, false)
-		return nil
-	}
+	// stub DescribeLogStreamsPages to return the output
+	client.On(
+		"DescribeLogStreamsPages",
+		mock.AnythingOfType("*cloudwatchlogs.DescribeLogStreamsInput"),
+		mock.AnythingOfType("func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool"),
+	).Return(nil).Run(
+		func(args mock.Arguments) {
+			f := args.Get(1).(func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool)
+			f(output, false)
+		},
+	)
 	// stub GetLogEvents to return an empty event slice (infinite loop)
 	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
 		&cloudwatchlogs.GetLogEventsOutput{
@@ -78,11 +84,17 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 			},
 		},
 	}
-	// stub our function to return the output
-	stubDescribeLogStreamsPages = func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
-		f(output, false)
-		return nil
-	}
+	// stub DescribeLogStreamsPages to return the output
+	client.On(
+		"DescribeLogStreamsPages",
+		mock.AnythingOfType("*cloudwatchlogs.DescribeLogStreamsInput"),
+		mock.AnythingOfType("func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool"),
+	).Return(nil).Run(
+		func(args mock.Arguments) {
+			f := args.Get(1).(func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool)
+			f(output, false)
+		},
+	)
 	// stub GetLogEvents to return an empty event slice (infinite loop)
 	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
 		&cloudwatchlogs.GetLogEventsOutput{
@@ -105,8 +117,9 @@ func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
 	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
 	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
 
+	client := &MockCWLClient{}
 	beat := &Cloudwatchlogsbeat{
-		AWSClient: &MockCWLClient{},
+		AWSClient: client,
 		Registry:  registry,
 	}
 	group := NewGroup("group", prospector, beat)
@@ -123,11 +136,23 @@ func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
 			},
 		},
 	}
-	// stub our function to return the streams
-	stubDescribeLogStreamsPages = func(f func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool) error {
-		f(output, false)
-		return nil
-	}
+	// stub DescribeLogStreamsPages to return the output
+	client.On(
+		"DescribeLogStreamsPages",
+		mock.AnythingOfType("*cloudwatchlogs.DescribeLogStreamsInput"),
+		mock.AnythingOfType("func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool"),
+	).Return(nil).Run(
+		func(args mock.Arguments) {
+			f := args.Get(1).(func(*cloudwatchlogs.DescribeLogStreamsOutput, bool) bool)
+			f(output, false)
+		},
+	)
+	// stub GetLogEvents to return an empty event slice (infinite loop)
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		&cloudwatchlogs.GetLogEventsOutput{
+			Events: []*cloudwatchlogs.OutputLogEvent{},
+		}, nil)
+
 	// go!
 	group.RefreshStreams()
 	assert.Equal(t, 1, len(group.Streams))
