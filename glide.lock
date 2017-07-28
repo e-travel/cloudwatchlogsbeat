@@ -1,5 +1,5 @@
-hash: a2d61b0d710351be03c839d97adabf4ee794fcafe73d237fe4511832d524f29c
-updated: 2017-06-12T16:36:24.841940513+03:00
+hash: 8537c53b0ffd3863e1d5f3a629fab5198d0fccd0dc4e6c9b992f15095a18c0e2
+updated: 2017-07-27T17:54:23.340107083+03:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 512bdaf8bec30abd545b440447cebb57b53d3af9
@@ -31,7 +31,6 @@ imports:
   - private/protocol/xml/xmlutil
   - service/cloudwatchlogs
   - service/cloudwatchlogs/cloudwatchlogsiface
-  - service/dynamodb
   - service/s3
   - service/s3/s3iface
   - service/sts
@@ -150,6 +149,9 @@ imports:
   repo: https://github.com/urso/sarama
 - name: github.com/stretchr/testify
   version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - assert
+  - mock
 - name: golang.org/x/net
   version: d58ca6618b994150e624f6888d871f4709db51a0
   subpackages:
@@ -166,4 +168,8 @@ imports:
   - windows/svc/debug
 - name: gopkg.in/yaml.v2
   version: a83829b6f1293c91addabc89d0571c246397bbf4
-testImports: []
+testImports:
+- name: github.com/pmezard/go-difflib
+  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  subpackages:
+  - difflib
