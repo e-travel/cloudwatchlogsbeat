@@ -14,10 +14,6 @@ import (
 )
 
 func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
-	// stub the registry functions
-	stubRegistryRead = func(*Stream) error { return nil }
-	stubRegistryWrite = func(*Stream) error { return nil }
-
 	group := &Group{
 		Name:       "group",
 		Prospector: &config.Prospector{},
@@ -32,9 +28,13 @@ func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 
 	events := []*Event{}
 
+	// stub the registry functions
+	registry := &MockRegistry{}
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
 	// create the stream
 	client := &MockCWLClient{}
-	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
+	stream := NewStream("TestStream", group, client, registry, make(chan bool))
 	publisher := &MockPublisher{}
 	stream.Publisher = publisher
 	// stub the publisher
@@ -57,10 +57,6 @@ func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 
 // test stream cleanup (a message will be sent to the finished channel)
 func Test_StreamShouldSendACleanupEvent_OnError(t *testing.T) {
-	// stub the registry functions
-	stubRegistryRead = func(*Stream) error { return nil }
-	stubRegistryWrite = func(*Stream) error { return nil }
-
 	client := &MockCWLClient{}
 	beat := &Cloudwatchlogsbeat{
 		AWSClient: client,
@@ -72,9 +68,13 @@ func Test_StreamShouldSendACleanupEvent_OnError(t *testing.T) {
 	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
 		nil, awserr.New(cloudwatchlogs.ErrCodeInvalidOperationException, "Error", nil))
 
+	// stub the registry functions
+	registry := &MockRegistry{}
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
 	// create the finished channel
 	finished := make(chan bool)
-	stream := NewStream("TestStream", group, client, &MockRegistry{}, finished)
+	stream := NewStream("TestStream", group, client, registry, finished)
 	// stub the log events
 	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
 		nil, awserr.New(cloudwatchlogs.ErrCodeInvalidOperationException, "Error", nil))

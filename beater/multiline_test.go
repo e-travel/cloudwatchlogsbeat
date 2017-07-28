@@ -12,10 +12,6 @@ import (
 )
 
 func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
-	// stub the registry functions
-	stubRegistryRead = func(*Stream) error { return nil }
-	stubRegistryWrite = func(*Stream) error { return nil }
-
 	group := &Group{
 		Name: "group",
 	}
@@ -38,9 +34,13 @@ func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 		CreateOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
 	}
 
+	// stub the registry functions
+	registry := &MockRegistry{}
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
 	// create the stream
 	client := &MockCWLClient{}
-	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
+	stream := NewStream("TestStream", group, client, registry, make(chan bool))
 	publisher := &MockPublisher{}
 	stream.Publisher = publisher
 	// stub the publisher
@@ -62,10 +62,6 @@ func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 }
 
 func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
-	// stub the registry functions
-	stubRegistryRead = func(*Stream) error { return nil }
-	stubRegistryWrite = func(*Stream) error { return nil }
-
 	group := &Group{
 		Name: "group",
 	}
@@ -88,9 +84,13 @@ func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 		CreateOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
 	}
 
+	// stub the registry functions
+	registry := &MockRegistry{}
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
 	// create the stream
 	client := &MockCWLClient{}
-	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
+	stream := NewStream("TestStream", group, client, registry, make(chan bool))
 	publisher := &MockPublisher{}
 	stream.Publisher = publisher
 	// stub the publisher
@@ -112,10 +112,6 @@ func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 }
 
 func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
-	// stub the registry functions
-	stubRegistryRead = func(*Stream) error { return nil }
-	stubRegistryWrite = func(*Stream) error { return nil }
-
 	group := &Group{
 		Name: "group",
 	}
@@ -139,9 +135,13 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 		CreateOutputLogEvent("TAG 11 22 33\n"),
 	}
 
+	// stub the registry functions
+	registry := &MockRegistry{}
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
 	// create the stream
 	client := &MockCWLClient{}
-	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
+	stream := NewStream("TestStream", group, client, registry, make(chan bool))
 	publisher := &MockPublisher{}
 	stream.Publisher = publisher
 	// stub the publisher
@@ -159,10 +159,6 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 }
 
 func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
-	// stub the registry functions
-	stubRegistryRead = func(*Stream) error { return nil }
-	stubRegistryWrite = func(*Stream) error { return nil }
-
 	group := &Group{
 		Name: "group",
 	}
@@ -186,9 +182,13 @@ func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
 		CreateOutputLogEvent("START RequestId: aaa-ccc Version: $LATEST\n"),
 	}
 
+	// stub the registry functions
+	registry := &MockRegistry{}
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
 	// create the stream
 	client := &MockCWLClient{}
-	stream := NewStream("TestStream", group, client, &MockRegistry{}, make(chan bool))
+	stream := NewStream("TestStream", group, client, registry, make(chan bool))
 	publisher := &MockPublisher{}
 	stream.Publisher = publisher
 	// stub the publisher

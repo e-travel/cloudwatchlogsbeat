@@ -19,9 +19,12 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 		StreamLastEventHorizon: horizon,
 	}
 	client := &MockCWLClient{}
+	registry := &MockRegistry{}
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
 	beat := &Cloudwatchlogsbeat{
 		AWSClient: client,
-		Registry:  &MockRegistry{},
+		Registry:  registry,
 	}
 	group := NewGroup("group", prospector, beat)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
@@ -42,10 +45,6 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 		&cloudwatchlogs.GetLogEventsOutput{
 			Events: []*cloudwatchlogs.OutputLogEvent{},
 		}, nil)
-
-	// stub the registry functions
-	stubRegistryRead = func(*Stream) error { return nil }
-	stubRegistryWrite = func(*Stream) error { return nil }
 
 	// go!
 	group.RefreshStreams()
@@ -62,9 +61,13 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 		StreamLastEventHorizon: horizon,
 	}
 	client := &MockCWLClient{}
+	registry := &MockRegistry{}
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+
 	beat := &Cloudwatchlogsbeat{
 		AWSClient: client,
-		Registry:  &MockRegistry{},
+		Registry:  registry,
 	}
 	group := NewGroup("group", prospector, beat)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
@@ -86,10 +89,6 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 			Events: []*cloudwatchlogs.OutputLogEvent{},
 		}, nil)
 
-	// stub the registry functions
-	stubRegistryRead = func(*Stream) error { return nil }
-	stubRegistryWrite = func(*Stream) error { return nil }
-
 	// go!
 	group.RefreshStreams()
 	assert.Equal(t, 0, len(group.Streams))
@@ -102,9 +101,13 @@ func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
 	prospector := &config.Prospector{
 		StreamLastEventHorizon: horizon,
 	}
+	registry := &MockRegistry{}
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+
 	beat := &Cloudwatchlogsbeat{
 		AWSClient: &MockCWLClient{},
-		Registry:  &MockRegistry{},
+		Registry:  registry,
 	}
 	group := NewGroup("group", prospector, beat)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
@@ -125,10 +128,6 @@ func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
 		f(output, false)
 		return nil
 	}
-	// stub the registry functions
-	stubRegistryRead = func(*Stream) error { return nil }
-	stubRegistryWrite = func(*Stream) error { return nil }
-
 	// go!
 	group.RefreshStreams()
 	assert.Equal(t, 1, len(group.Streams))

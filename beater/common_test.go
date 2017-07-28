@@ -10,13 +10,21 @@ import (
 )
 
 // Our mock registry
-type MockRegistry struct{}
+type MockRegistry struct {
+	mock.Mock
+}
 
-var stubRegistryRead func(*Stream) error
-var stubRegistryWrite func(*Stream) error
+func (registry *MockRegistry) ReadStreamInfo(stream *Stream) error {
+	args := registry.Called(stream)
+	err, _ := args.Get(0).(error)
+	return err
+}
 
-func (MockRegistry) ReadStreamInfo(*Stream) error  { return stubRegistryRead(stream) }
-func (MockRegistry) WriteStreamInfo(*Stream) error { return stubRegistryWrite(stream) }
+func (registry *MockRegistry) WriteStreamInfo(stream *Stream) error {
+	args := registry.Called(stream)
+	err, _ := args.Get(0).(error)
+	return err
+}
 
 // Our mock AWS CloudWatchLogs client
 type MockCWLClient struct {
