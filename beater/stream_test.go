@@ -17,6 +17,9 @@ func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 	group := &Group{
 		Name:       "group",
 		Prospector: &config.Prospector{},
+		Beat: &Cloudwatchlogsbeat{
+			Config: config.Config{},
+		},
 	}
 
 	// stub our expected events
@@ -62,6 +65,7 @@ func Test_StreamShouldSendACleanupEvent_OnError(t *testing.T) {
 		AWSClient: client,
 		Registry:  &MockRegistry{},
 	}
+
 	group := NewGroup("group", &config.Prospector{}, beat)
 
 	// stub GetLogEvents to return the error
@@ -92,9 +96,12 @@ func Test_StreamShouldSendACleanupEvent_OnExpiring(t *testing.T) {
 func Test_StreamParams_HaveTheCorrectStartTime(t *testing.T) {
 	horizon := time.Hour
 	group := &Group{
-		Name: "group",
-		Prospector: &config.Prospector{
-			StreamLastEventHorizon: horizon,
+		Name:       "group",
+		Prospector: &config.Prospector{},
+		Beat: &Cloudwatchlogsbeat{
+			Config: config.Config{
+				StreamLastEventHorizon: horizon,
+			},
 		},
 	}
 
