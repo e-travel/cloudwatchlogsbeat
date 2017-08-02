@@ -150,7 +150,7 @@ func (stream *Stream) Monitor() {
 }
 
 func (stream *Stream) IsHot(lastEventTimestamp int64) bool {
-	return !IsBefore(stream.Group.Beat.Config.HotStreamHorizon, lastEventTimestamp)
+	return !IsBefore(stream.Group.Beat.Config.HotStreamEventHorizon, lastEventTimestamp)
 }
 
 func (stream *Stream) report() {

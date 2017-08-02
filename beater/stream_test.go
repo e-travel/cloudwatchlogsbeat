@@ -116,13 +116,13 @@ func Test_StreamParams_HaveTheCorrectStartTime(t *testing.T) {
 	assert.True(t, *event2.Timestamp > startTime)
 }
 
-func Test_Stream_IsHot_WhenLastTimestamp_Is_Within_HotStreamHorizon(t *testing.T) {
+func Test_Stream_IsHot_WhenLastTimestamp_Is_Within_HotStreamEventHorizon(t *testing.T) {
 	group := &Group{
 		Name:       "group",
 		Prospector: &config.Prospector{},
 		Beat: &Cloudwatchlogsbeat{
 			Config: config.Config{
-				HotStreamHorizon: 10 * time.Minute,
+				HotStreamEventHorizon: 10 * time.Minute,
 			},
 		},
 	}
@@ -134,13 +134,13 @@ func Test_Stream_IsHot_WhenLastTimestamp_Is_Within_HotStreamHorizon(t *testing.T
 
 }
 
-func Test_Stream_IsNotHot_WhenLastTimestamp_Is_Before_HotStreamHorizon(t *testing.T) {
+func Test_Stream_IsNotHot_WhenLastTimestamp_Is_Before_HotStreamEventHorizon(t *testing.T) {
 	group := &Group{
 		Name:       "group",
 		Prospector: &config.Prospector{},
 		Beat: &Cloudwatchlogsbeat{
 			Config: config.Config{
-				HotStreamHorizon: 10 * time.Minute,
+				HotStreamEventHorizon: 10 * time.Minute,
 			},
 		},
 	}
@@ -152,13 +152,13 @@ func Test_Stream_IsNotHot_WhenLastTimestamp_Is_Before_HotStreamHorizon(t *testin
 
 }
 
-func Test_Stream_IsNotHot_When_HotStreamHorizon_IsZero(t *testing.T) {
+func Test_Stream_IsNotHot_When_HotStreamEventHorizon_IsZero(t *testing.T) {
 	group := &Group{
 		Name:       "group",
 		Prospector: &config.Prospector{},
 		Beat: &Cloudwatchlogsbeat{
 			Config: config.Config{
-				HotStreamHorizon: time.Duration(0),
+				HotStreamEventHorizon: time.Duration(0),
 			},
 		},
 	}

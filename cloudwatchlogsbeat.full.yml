@@ -23,7 +23,7 @@ cloudwatchlogsbeat:
   # define the refresh frequency of log events for hot streams
   hot_stream_event_refresh_frequency: 1s
 
-  # define the default refresh frequency of log events for streams
+  # defines the default refresh frequency of log events for streams
   stream_event_refresh_frequency: 10s
 
   # log events earlier than this value are not captured

@@ -62,9 +62,9 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 
 	// Stop the program if hot stream horizon has been specified in the config file
 	// but the hot stream refresh frequency has not (or is zero)
-	if config.HotStreamHorizon > 0 && config.HotStreamEventRefreshFrequency == 0 {
-		Fatal(errors.New(fmt.Sprintf("HotStreamHorizon=%d but HotStreamEventRefreshFrequency=%d",
-			config.HotStreamHorizon, config.HotStreamEventRefreshFrequency)))
+	if config.HotStreamEventHorizon > 0 && config.HotStreamEventRefreshFrequency == 0 {
+		Fatal(errors.New(fmt.Sprintf("HotStreamEventHorizon=%d but HotStreamEventRefreshFrequency=%d",
+			config.HotStreamEventHorizon, config.HotStreamEventRefreshFrequency)))
 	}
 
 	// Create AWS session
