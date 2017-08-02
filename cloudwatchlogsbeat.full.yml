@@ -19,7 +19,7 @@ cloudwatchlogsbeat:
 
   # hot streams are streams whose last event is earlier than this value
   # a value of zero deactivates hot streams
-  hot_stream_horizon: 5m
+  hot_stream_event_horizon: 5m
   # define the refresh frequency of log events for hot streams
   hot_stream_event_refresh_frequency: 1s
 
