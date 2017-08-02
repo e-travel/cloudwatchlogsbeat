@@ -23,4 +23,5 @@ type Config struct {
 	AWSRegion                      string        `config:"aws_region"`
 	Prospectors                    []Prospector  `config:"prospectors"`
 	StreamLastEventHorizon         time.Duration `config:"stream_last_event_horizon"`
+	StreamEventRefreshFrequency    time.Duration `config:"hot_stream_event_refresh_frequency"`
 }

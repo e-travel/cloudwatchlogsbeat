@@ -122,6 +122,8 @@ func (stream *Stream) Monitor() {
 	reportTicker := time.NewTicker(reportFrequency)
 	defer reportTicker.Stop()
 
+	eventRefreshFrequency := stream.Group.Beat.Config.StreamEventRefreshFrequency
+
 	for {
 		err := stream.Next()
 		if err != nil {
@@ -136,11 +138,7 @@ func (stream *Stream) Monitor() {
 		case <-reportTicker.C:
 			stream.report()
 		default:
-			// TODO: Revise if this is needed and what its value should be
-			//       Use a ticker instead of Sleep
-			//       Make more adaptive (wrt to how old this is and the probability
-			//       of receiving more data)
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(eventRefreshFrequency)
 		}
 	}
 }
