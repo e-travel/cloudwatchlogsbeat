@@ -122,7 +122,7 @@ func (stream *Stream) Monitor() {
 	reportTicker := time.NewTicker(reportFrequency)
 	defer reportTicker.Stop()
 
-	eventRefreshFrequency := stream.Group.Beat.Config.StreamEventRefreshFrequency
+	var eventRefreshFrequency = stream.Group.Beat.Config.StreamEventRefreshFrequency
 
 	for {
 		err := stream.Next()
@@ -134,6 +134,12 @@ func (stream *Stream) Monitor() {
 		if IsBefore(stream.Group.Beat.Config.StreamLastEventHorizon, stream.LastEventTimestamp) {
 			return
 		}
+		// is the stream "hot"?
+		if stream.IsHot(stream.LastEventTimestamp) {
+			eventRefreshFrequency = stream.Group.Beat.Config.HotStreamEventRefreshFrequency
+		} else {
+			eventRefreshFrequency = stream.Group.Beat.Config.StreamEventRefreshFrequency
+		}
 		select {
 		case <-reportTicker.C:
 			stream.report()
@@ -141,6 +147,10 @@ func (stream *Stream) Monitor() {
 			time.Sleep(eventRefreshFrequency)
 		}
 	}
+}
+
+func (stream *Stream) IsHot(lastEventTimestamp int64) bool {
+	return !IsBefore(stream.Group.Beat.Config.HotStreamHorizon, lastEventTimestamp)
 }
 
 func (stream *Stream) report() {

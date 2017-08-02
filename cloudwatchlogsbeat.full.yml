@@ -7,7 +7,7 @@ name: cloudwatchlogsbeat
 
 cloudwatchlogsbeat:
   # Defines how often the manager will refresh its list of monitored log groups
-  group_refresh_frequency: 1s
+  group_refresh_frequency: 10s
   # the bucket in which log streams save their state
   s3_bucket_name: the-bucket-name
   # defines how often a log group will refresh its list of monitored streams
@@ -16,6 +16,12 @@ cloudwatchlogsbeat:
   report_frequency: 5m
   # defines AWS region (default: eu-west-1)
   aws_region: eu-west-1
+
+  # hot streams are streams whose last event is earlier than this value
+  # a value of zero deactivates hot streams
+  hot_stream_horizon: 5m
+  # define the refresh frequency of log events for hot streams
+  hot_stream_event_refresh_frequency: 1s
 
   # define the default refresh frequency of log events for streams
   stream_event_refresh_frequency: 10s
