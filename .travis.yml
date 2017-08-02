@@ -10,8 +10,3 @@ install: true
 script:
   - go build -v
   - go test -v -cover ./beater
-
-branches:
-  only:
-    - master
-    - test-refactoring
