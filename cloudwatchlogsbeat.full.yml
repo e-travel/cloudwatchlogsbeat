@@ -27,11 +27,11 @@ cloudwatchlogsbeat:
   hot_stream_event_refresh_frequency: 1s
 
   # === STANDARD STREAMS ===
-  # defines the refresh frequency of log events for streams
-  stream_event_refresh_frequency: 10s
   # log events earlier than this value are not captured
   # log streams whose last event is earlier than this value are not monitored
   stream_event_horizon: 3h
+  # defines the refresh frequency of log events for streams
+  stream_event_refresh_frequency: 10s
 
   # === PROSPECTORS ===
   # Applications whose log groups we'd like to monitor

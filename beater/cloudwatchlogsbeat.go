@@ -61,6 +61,19 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 		reportFrequency = config.ReportFrequency
 	}
 
+	// log the settings in use
+	logp.Info(
+		"settings: " +
+			fmt.Sprintf("s3_bucket_name=%s", config.S3BucketName) +
+			fmt.Sprintf("|aws_region=%v", config.AWSRegion) +
+			fmt.Sprintf("|group_refresh_frequency=%v", config.GroupRefreshFrequency) +
+			fmt.Sprintf("|stream_refresh_frequency=%v", config.StreamRefreshFrequency) +
+			fmt.Sprintf("|report_frequency=%v", config.ReportFrequency) +
+			fmt.Sprintf("|stream_event_horizon=%v", config.StreamEventHorizon) +
+			fmt.Sprintf("|stream_event_refresh_frequency=%v", config.StreamEventRefreshFrequency) +
+			fmt.Sprintf("|hot_stream_event_horizon=%v", config.HotStreamEventHorizon) +
+			fmt.Sprintf("|hot_stream_event_refresh_frequency=%v", config.HotStreamEventRefreshFrequency))
+
 	// Stop the program if hot stream horizon has been specified in the config file
 	// but the hot stream refresh frequency has not (or is zero)
 	if config.HotStreamEventHorizon > 0 && config.HotStreamEventRefreshFrequency == 0 {
@@ -72,8 +85,7 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 
 	// log the fact that hot streams are activated
 	if config.HotStreamEventHorizon > 0 {
-		logp.Info(fmt.Sprintf("Hot streams activated with horizon=%v and freq=%v",
-			config.HotStreamEventHorizon, config.HotStreamEventRefreshFrequency))
+		logp.Info("Hot streams activated")
 	}
 
 	// Create AWS session
