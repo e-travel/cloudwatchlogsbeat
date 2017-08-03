@@ -23,7 +23,7 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 		AWSClient: client,
 		Registry:  registry,
 		Config: config.Config{
-			StreamLastEventHorizon: horizon,
+			StreamEventHorizon: horizon,
 		},
 	}
 	group := NewGroup("group", &config.Prospector{}, beat)
@@ -72,7 +72,7 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 		AWSClient: client,
 		Registry:  registry,
 		Config: config.Config{
-			StreamLastEventHorizon: horizon,
+			StreamEventHorizon: horizon,
 		},
 	}
 	group := NewGroup("group", &config.Prospector{}, beat)
@@ -119,7 +119,7 @@ func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
 		AWSClient: client,
 		Registry:  registry,
 		Config: config.Config{
-			StreamLastEventHorizon: horizon,
+			StreamEventHorizon: horizon,
 		},
 	}
 	group := NewGroup("group", &config.Prospector{}, beat)

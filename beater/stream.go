@@ -43,7 +43,7 @@ type Stream struct {
 func NewStream(name string, group *Group, client cloudwatchlogsiface.CloudWatchLogsAPI,
 	registry Registry, finished chan<- bool) *Stream {
 
-	startTime := time.Now().UTC().Add(-group.Beat.Config.StreamLastEventHorizon)
+	startTime := time.Now().UTC().Add(-group.Beat.Config.StreamEventHorizon)
 
 	params := &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  aws.String(group.Name),
@@ -131,7 +131,7 @@ func (stream *Stream) Monitor() {
 			return
 		}
 		// is the stream expired?
-		if IsBefore(stream.Group.Beat.Config.StreamLastEventHorizon, stream.LastEventTimestamp) {
+		if IsBefore(stream.Group.Beat.Config.StreamEventHorizon, stream.LastEventTimestamp) {
 			return
 		}
 		// is the stream "hot"?

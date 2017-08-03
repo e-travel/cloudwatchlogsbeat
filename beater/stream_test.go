@@ -100,7 +100,7 @@ func Test_StreamParams_HaveTheCorrectStartTime(t *testing.T) {
 		Prospector: &config.Prospector{},
 		Beat: &Cloudwatchlogsbeat{
 			Config: config.Config{
-				StreamLastEventHorizon: horizon,
+				StreamEventHorizon: horizon,
 			},
 		},
 	}
