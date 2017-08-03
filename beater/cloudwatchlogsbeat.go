@@ -3,6 +3,7 @@ package beater
 import (
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/e-travel/cloudwatchlogsbeat/config"
@@ -63,8 +64,16 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	// Stop the program if hot stream horizon has been specified in the config file
 	// but the hot stream refresh frequency has not (or is zero)
 	if config.HotStreamEventHorizon > 0 && config.HotStreamEventRefreshFrequency == 0 {
-		Fatal(errors.New(fmt.Sprintf("HotStreamEventHorizon=%d but HotStreamEventRefreshFrequency=%d",
-			config.HotStreamEventHorizon, config.HotStreamEventRefreshFrequency)))
+		err := errors.New(
+			fmt.Sprintf("HotStreamEventRefreshFrequency can not be zero while HotStreamEventHorizon=%v. Aborting.", config.HotStreamEventHorizon))
+		logp.Critical(err.Error())
+		os.Exit(1)
+	}
+
+	// log the fact that hot streams are activated
+	if config.HotStreamEventHorizon > 0 {
+		logp.Info(fmt.Sprintf("Hot streams activated with horizon=%v and freq=%v",
+			config.HotStreamEventHorizon, config.HotStreamEventRefreshFrequency))
 	}
 
 	// Create AWS session
