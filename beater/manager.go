@@ -4,15 +4,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/e-travel/cloudwatchlogsbeat/config"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/elastic/beats/libbeat/logp"
 )
 
 type GroupManager struct {
-	prospectors []config.Prospector
+	prospectors []Prospector
 	beat        *Cloudwatchlogsbeat
 	groups      map[string]*Group
 }
@@ -61,7 +59,7 @@ func (manager *GroupManager) refreshGroups() {
 	}
 }
 
-func (manager *GroupManager) addNewGroup(name string, prospector *config.Prospector) {
+func (manager *GroupManager) addNewGroup(name string, prospector *Prospector) {
 	group := NewGroup(name, prospector, manager.beat)
 	manager.groups[group.Name] = group
 	go group.Monitor()

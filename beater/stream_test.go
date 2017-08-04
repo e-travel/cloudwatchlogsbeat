@@ -4,8 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/e-travel/cloudwatchlogsbeat/config"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -16,9 +14,9 @@ import (
 func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 	group := &Group{
 		Name:       "group",
-		Prospector: &config.Prospector{},
+		Prospector: &Prospector{},
 		Beat: &Cloudwatchlogsbeat{
-			Config: config.Config{},
+			Config: Config{},
 		},
 	}
 
@@ -66,7 +64,7 @@ func Test_Stream_ShouldSendACleanupEvent_OnError(t *testing.T) {
 		Registry:  &MockRegistry{},
 	}
 
-	group := NewGroup("group", &config.Prospector{}, beat)
+	group := NewGroup("group", &Prospector{}, beat)
 
 	// stub GetLogEvents to return the error
 	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
@@ -97,9 +95,9 @@ func Test_StreamParams_HaveTheCorrectStartTime(t *testing.T) {
 	horizon := time.Hour
 	group := &Group{
 		Name:       "group",
-		Prospector: &config.Prospector{},
+		Prospector: &Prospector{},
 		Beat: &Cloudwatchlogsbeat{
-			Config: config.Config{
+			Config: Config{
 				StreamEventHorizon: horizon,
 			},
 		},
@@ -119,9 +117,9 @@ func Test_StreamParams_HaveTheCorrectStartTime(t *testing.T) {
 func Test_Stream_IsHot_WhenLastTimestamp_Is_Within_HotStreamEventHorizon(t *testing.T) {
 	group := &Group{
 		Name:       "group",
-		Prospector: &config.Prospector{},
+		Prospector: &Prospector{},
 		Beat: &Cloudwatchlogsbeat{
-			Config: config.Config{
+			Config: Config{
 				HotStreamEventHorizon: 10 * time.Minute,
 			},
 		},
@@ -137,9 +135,9 @@ func Test_Stream_IsHot_WhenLastTimestamp_Is_Within_HotStreamEventHorizon(t *test
 func Test_Stream_IsNotHot_WhenLastTimestamp_Is_Before_HotStreamEventHorizon(t *testing.T) {
 	group := &Group{
 		Name:       "group",
-		Prospector: &config.Prospector{},
+		Prospector: &Prospector{},
 		Beat: &Cloudwatchlogsbeat{
-			Config: config.Config{
+			Config: Config{
 				HotStreamEventHorizon: 10 * time.Minute,
 			},
 		},
@@ -155,9 +153,9 @@ func Test_Stream_IsNotHot_WhenLastTimestamp_Is_Before_HotStreamEventHorizon(t *t
 func Test_Stream_IsNotHot_When_HotStreamEventHorizon_IsZero(t *testing.T) {
 	group := &Group{
 		Name:       "group",
-		Prospector: &config.Prospector{},
+		Prospector: &Prospector{},
 		Beat: &Cloudwatchlogsbeat{
-			Config: config.Config{
+			Config: Config{
 				HotStreamEventHorizon: time.Duration(0),
 			},
 		},

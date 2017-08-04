@@ -4,8 +4,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/e-travel/cloudwatchlogsbeat/config"
-
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -15,17 +13,17 @@ func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 	group := &Group{
 		Name: "group",
 		Beat: &Cloudwatchlogsbeat{
-			Config: config.Config{},
+			Config: Config{},
 		},
 	}
 
 	// setup multiline settings
-	multiline := &config.Multiline{
+	multiline := &Multiline{
 		Pattern: "^REPORT RequestId.+",
 		Negate:  true,
 		Match:   "before",
 	}
-	prospector := &config.Prospector{
+	prospector := &Prospector{
 		Multiline: multiline,
 	}
 	group.Prospector = prospector
@@ -68,17 +66,17 @@ func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 	group := &Group{
 		Name: "group",
 		Beat: &Cloudwatchlogsbeat{
-			Config: config.Config{},
+			Config: Config{},
 		},
 	}
 
 	// setup multiline settings
-	multiline := &config.Multiline{
+	multiline := &Multiline{
 		Pattern: "^START RequestId.+",
 		Negate:  true,
 		Match:   "after",
 	}
-	prospector := &config.Prospector{
+	prospector := &Prospector{
 		Multiline: multiline,
 	}
 	group.Prospector = prospector
@@ -121,17 +119,17 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 	group := &Group{
 		Name: "group",
 		Beat: &Cloudwatchlogsbeat{
-			Config: config.Config{},
+			Config: Config{},
 		},
 	}
 
 	// setup multiline settings
-	multiline := &config.Multiline{
+	multiline := &Multiline{
 		Pattern: "^TAG.*",
 		Negate:  false,
 		Match:   "before",
 	}
-	prospector := &config.Prospector{
+	prospector := &Prospector{
 		Multiline: multiline,
 	}
 	group.Prospector = prospector
@@ -171,17 +169,17 @@ func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
 	group := &Group{
 		Name: "group",
 		Beat: &Cloudwatchlogsbeat{
-			Config: config.Config{},
+			Config: Config{},
 		},
 	}
 
 	// setup multiline settings
-	multiline := &config.Multiline{
+	multiline := &Multiline{
 		Pattern: "^TAG.*",
 		Negate:  false,
 		Match:   "after",
 	}
-	prospector := &config.Prospector{
+	prospector := &Prospector{
 		Multiline: multiline,
 	}
 	group.Prospector = prospector

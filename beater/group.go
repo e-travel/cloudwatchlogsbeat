@@ -4,8 +4,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/e-travel/cloudwatchlogsbeat/config"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
@@ -14,7 +12,7 @@ import (
 
 type Group struct {
 	Name       string
-	Prospector *config.Prospector
+	Prospector *Prospector
 	Client     cloudwatchlogsiface.CloudWatchLogsAPI
 	Beat       *Cloudwatchlogsbeat
 	Streams    map[string]*Stream
@@ -24,7 +22,7 @@ type Group struct {
 	removedStreams int
 }
 
-func NewGroup(name string, prospector *config.Prospector, beat *Cloudwatchlogsbeat) *Group {
+func NewGroup(name string, prospector *Prospector, beat *Cloudwatchlogsbeat) *Group {
 	return &Group{
 		Name:       name,
 		Prospector: prospector,

@@ -6,7 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/e-travel/cloudwatchlogsbeat/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -22,11 +21,11 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 	beat := &Cloudwatchlogsbeat{
 		AWSClient: client,
 		Registry:  registry,
-		Config: config.Config{
+		Config: Config{
 			StreamEventHorizon: horizon,
 		},
 	}
-	group := NewGroup("group", &config.Prospector{}, beat)
+	group := NewGroup("group", &Prospector{}, beat)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			&cloudwatchlogs.LogStream{
@@ -71,11 +70,11 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 	beat := &Cloudwatchlogsbeat{
 		AWSClient: client,
 		Registry:  registry,
-		Config: config.Config{
+		Config: Config{
 			StreamEventHorizon: horizon,
 		},
 	}
-	group := NewGroup("group", &config.Prospector{}, beat)
+	group := NewGroup("group", &Prospector{}, beat)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			&cloudwatchlogs.LogStream{
@@ -118,11 +117,11 @@ func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
 	beat := &Cloudwatchlogsbeat{
 		AWSClient: client,
 		Registry:  registry,
-		Config: config.Config{
+		Config: Config{
 			StreamEventHorizon: horizon,
 		},
 	}
-	group := NewGroup("group", &config.Prospector{}, beat)
+	group := NewGroup("group", &Prospector{}, beat)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			// the problematic stream

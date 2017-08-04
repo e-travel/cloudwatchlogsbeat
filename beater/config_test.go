@@ -4,8 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/e-travel/cloudwatchlogsbeat/config"
-
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,7 +19,7 @@ aws_region: the-aws-region
 `
 	cfg, _ := common.NewConfigWithYAML([]byte(content), "test")
 
-	config := config.Config{}
+	config := Config{}
 	cfg.Unpack(&config)
 	assert.Equal(t, "the-bucket-name", config.S3BucketName)
 	assert.Equal(t, time.Second, config.GroupRefreshFrequency)

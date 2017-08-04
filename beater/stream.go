@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/e-travel/cloudwatchlogsbeat/config"
 	"github.com/elastic/beats/libbeat/logp"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -28,7 +27,7 @@ type Stream struct {
 	// This is used for multi line mode. We store all text needed until we find
 	// the end of message
 	Buffer     bytes.Buffer
-	Multiline  *config.Multiline
+	Multiline  *Multiline
 	MultiRegex *regexp.Regexp
 	// the publisher for our events
 	Publisher EventPublisher

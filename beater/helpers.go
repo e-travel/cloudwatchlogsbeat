@@ -4,8 +4,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/e-travel/cloudwatchlogsbeat/config"
-
 	"github.com/elastic/beats/libbeat/logp"
 )
 
@@ -23,7 +21,7 @@ func ToTime(timestamp int64) time.Time {
 }
 
 // Validates a multiline configuration section
-func ValidateMultiline(multiline *config.Multiline) {
+func ValidateMultiline(multiline *Multiline) {
 	if multiline == nil {
 		return
 	}

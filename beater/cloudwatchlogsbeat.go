@@ -6,8 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/e-travel/cloudwatchlogsbeat/config"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -30,7 +28,7 @@ type Cloudwatchlogsbeat struct {
 	Done chan struct{}
 
 	// Configuration
-	Config config.Config
+	Config Config
 
 	// Beat publisher client
 	Client publisher.Client
@@ -51,7 +49,7 @@ type Cloudwatchlogsbeat struct {
 // Creates a new cloudwatchlogsbeat
 func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	// Read configuration
-	config := config.Config{}
+	config := Config{}
 	if err := cfg.Unpack(&config); err != nil {
 		return nil, fmt.Errorf("Error reading config file: %v", err)
 	}
