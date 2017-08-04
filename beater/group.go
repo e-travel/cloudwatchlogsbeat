@@ -57,7 +57,7 @@ func (group *Group) RefreshStreams() {
 					continue
 				}
 				// is the stream expired?
-				expired := IsBefore(group.Prospector.StreamLastEventHorizon,
+				expired := IsBefore(group.Beat.Config.StreamEventHorizon,
 					*logStream.LastEventTimestamp)
 				// is this a stream that we're not monitoring and it is not expired?
 				if !ok && !expired {

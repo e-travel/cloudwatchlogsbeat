@@ -1,7 +1,9 @@
 package beater
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/e-travel/cloudwatchlogsbeat/config"
@@ -57,6 +59,33 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	// Update report frequency
 	if config.ReportFrequency > 0 {
 		reportFrequency = config.ReportFrequency
+	}
+
+	// log the settings in use
+	logp.Info(
+		"settings: " +
+			fmt.Sprintf("s3_bucket_name=%s", config.S3BucketName) +
+			fmt.Sprintf("|aws_region=%v", config.AWSRegion) +
+			fmt.Sprintf("|group_refresh_frequency=%v", config.GroupRefreshFrequency) +
+			fmt.Sprintf("|stream_refresh_frequency=%v", config.StreamRefreshFrequency) +
+			fmt.Sprintf("|report_frequency=%v", config.ReportFrequency) +
+			fmt.Sprintf("|stream_event_horizon=%v", config.StreamEventHorizon) +
+			fmt.Sprintf("|stream_event_refresh_frequency=%v", config.StreamEventRefreshFrequency) +
+			fmt.Sprintf("|hot_stream_event_horizon=%v", config.HotStreamEventHorizon) +
+			fmt.Sprintf("|hot_stream_event_refresh_frequency=%v", config.HotStreamEventRefreshFrequency))
+
+	// Stop the program if hot stream horizon has been specified in the config file
+	// but the hot stream refresh frequency has not (or is zero)
+	if config.HotStreamEventHorizon > 0 && config.HotStreamEventRefreshFrequency == 0 {
+		err := errors.New(
+			fmt.Sprintf("HotStreamEventRefreshFrequency can not be zero while HotStreamEventHorizon=%v. Aborting.", config.HotStreamEventHorizon))
+		logp.Critical(err.Error())
+		os.Exit(1)
+	}
+
+	// log the fact that hot streams are activated
+	if config.HotStreamEventHorizon > 0 {
+		logp.Info("Hot streams activated")
 	}
 
 	// Create AWS session

@@ -43,7 +43,7 @@ type Stream struct {
 func NewStream(name string, group *Group, client cloudwatchlogsiface.CloudWatchLogsAPI,
 	registry Registry, finished chan<- bool) *Stream {
 
-	startTime := time.Now().UTC().Add(-group.Prospector.StreamLastEventHorizon)
+	startTime := time.Now().UTC().Add(-group.Beat.Config.StreamEventHorizon)
 
 	params := &cloudwatchlogs.GetLogEventsInput{
 		LogGroupName:  aws.String(group.Name),
@@ -108,10 +108,9 @@ func (stream *Stream) Monitor() {
 	logp.Info("[stream] %s started", stream.FullName())
 
 	defer func() {
+		logp.Info("[stream] %s stopped", stream.FullName())
 		stream.finished <- true
 	}()
-
-	defer logp.Info("[stream] %s stopped", stream.FullName())
 
 	// first of all, read the stream's info from our registry storage
 	err := stream.Registry.ReadStreamInfo(stream)
@@ -122,6 +121,8 @@ func (stream *Stream) Monitor() {
 	reportTicker := time.NewTicker(reportFrequency)
 	defer reportTicker.Stop()
 
+	var eventRefreshFrequency = stream.Group.Beat.Config.StreamEventRefreshFrequency
+
 	for {
 		err := stream.Next()
 		if err != nil {
@@ -129,20 +130,26 @@ func (stream *Stream) Monitor() {
 			return
 		}
 		// is the stream expired?
-		if IsBefore(stream.Group.Prospector.StreamLastEventHorizon, stream.LastEventTimestamp) {
+		if IsBefore(stream.Group.Beat.Config.StreamEventHorizon, stream.LastEventTimestamp) {
 			return
+		}
+		// is the stream "hot"?
+		if stream.IsHot(stream.LastEventTimestamp) {
+			eventRefreshFrequency = stream.Group.Beat.Config.HotStreamEventRefreshFrequency
+		} else {
+			eventRefreshFrequency = stream.Group.Beat.Config.StreamEventRefreshFrequency
 		}
 		select {
 		case <-reportTicker.C:
 			stream.report()
 		default:
-			// TODO: Revise if this is needed and what its value should be
-			//       Use a ticker instead of Sleep
-			//       Make more adaptive (wrt to how old this is and the probability
-			//       of receiving more data)
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(eventRefreshFrequency)
 		}
 	}
+}
+
+func (stream *Stream) IsHot(lastEventTimestamp int64) bool {
+	return !IsBefore(stream.Group.Beat.Config.HotStreamEventHorizon, lastEventTimestamp)
 }
 
 func (stream *Stream) report() {

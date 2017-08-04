@@ -14,6 +14,9 @@ import (
 func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 	group := &Group{
 		Name: "group",
+		Beat: &Cloudwatchlogsbeat{
+			Config: config.Config{},
+		},
 	}
 
 	// setup multiline settings
@@ -64,6 +67,9 @@ func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 	group := &Group{
 		Name: "group",
+		Beat: &Cloudwatchlogsbeat{
+			Config: config.Config{},
+		},
 	}
 
 	// setup multiline settings
@@ -114,6 +120,9 @@ func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 	group := &Group{
 		Name: "group",
+		Beat: &Cloudwatchlogsbeat{
+			Config: config.Config{},
+		},
 	}
 
 	// setup multiline settings
@@ -161,6 +170,9 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
 	group := &Group{
 		Name: "group",
+		Beat: &Cloudwatchlogsbeat{
+			Config: config.Config{},
+		},
 	}
 
 	// setup multiline settings
