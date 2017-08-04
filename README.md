@@ -79,6 +79,22 @@ logs:Describe*
 ```
 plus `s3:*` on the S3 bucket resource.
 
+# Beat configuration
+
+The beat's operation is controlled by customizing the settings in the
+configuration file, an example of which
+is [included in this repo](cloudwatchlogsbeat.full.yml). The beat's
+operation is subject to AWS limitations and throttling policies which
+are
+summarized
+[here](http://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/cloudwatch_limits_cwl.html).
+
+Throttling errors can be mitigated to some degree by tuning the beat's
+configuration with respect to the various refresh frequencies. The
+beat also defines two kinds of streams, frequently updated (aka hot)
+and standard, which can be configured differently to further
+control/reduce the rate of AWS API requests.
+
 # Tests
 
 The beat's tests can be executed as follows:
