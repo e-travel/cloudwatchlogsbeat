@@ -47,7 +47,7 @@ var stream = &Stream{
 	Params: &cloudwatchlogs.GetLogEventsInput{},
 }
 
-func Test_ReadStreamInfo_WhenGetObjectNotFound_ReturnsNil(t *testing.T) {
+func Test_S3_ReadStreamInfo_WhenGetObjectNotFound_ReturnsNil(t *testing.T) {
 	client := &MockS3Client{
 		GetObjectStub: func(*s3.GetObjectInput) (*s3.GetObjectOutput, error) {
 			return nil, awserr.New(s3.ErrCodeNoSuchKey, "Does not exist", nil)
@@ -58,7 +58,7 @@ func Test_ReadStreamInfo_WhenGetObjectNotFound_ReturnsNil(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func Test_ReadStreamInfo_WhenBucketDoesNotExist_ReturnsError(t *testing.T) {
+func Test_S3_ReadStreamInfo_WhenBucketDoesNotExist_ReturnsError(t *testing.T) {
 	client := &MockS3Client{
 		GetObjectStub: func(*s3.GetObjectInput) (*s3.GetObjectOutput, error) {
 			return nil, awserr.New(s3.ErrCodeNoSuchBucket, "Does not exist", nil)
@@ -69,7 +69,7 @@ func Test_ReadStreamInfo_WhenBucketDoesNotExist_ReturnsError(t *testing.T) {
 	assert.Equal(t, s3.ErrCodeNoSuchBucket, err.Code())
 }
 
-func Test_ReadStreamInfo_WhenItemExists_ShouldUpdateStream(t *testing.T) {
+func Test_S3_ReadStreamInfo_WhenItemExists_ShouldUpdateStream(t *testing.T) {
 	content := S3ItemBody{
 		bytes.NewBufferString(`{"NextToken":"abcde","Buffer":"This is the buffer"}`),
 	}
@@ -87,7 +87,7 @@ func Test_ReadStreamInfo_WhenItemExists_ShouldUpdateStream(t *testing.T) {
 	assert.Equal(t, "This is the buffer", stream.Buffer.String())
 }
 
-func Test_WriteStreamInfo_ShouldReturnNil_OnSuccess(t *testing.T) {
+func Test_S3_WriteStreamInfo_ShouldReturnNil_OnSuccess(t *testing.T) {
 	stream.Buffer = *bytes.NewBufferString("This is the buffer")
 	stream.Params.NextToken = aws.String("abcde")
 	client := &MockS3Client{
@@ -106,7 +106,7 @@ func Test_WriteStreamInfo_ShouldReturnNil_OnSuccess(t *testing.T) {
 	registry.WriteStreamInfo(stream)
 }
 
-func Test_WriteStreamInfo_ShouldReturnError_OnError(t *testing.T) {
+func Test_S3_WriteStreamInfo_ShouldReturnError_OnError(t *testing.T) {
 	stream.Params.NextToken = aws.String("abcde")
 	client := &MockS3Client{
 		PutObjectStub: func(input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
