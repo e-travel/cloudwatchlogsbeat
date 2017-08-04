@@ -108,10 +108,9 @@ func (stream *Stream) Monitor() {
 	logp.Info("[stream] %s started", stream.FullName())
 
 	defer func() {
+		logp.Info("[stream] %s stopped", stream.FullName())
 		stream.finished <- true
 	}()
-
-	defer logp.Info("[stream] %s stopped", stream.FullName())
 
 	// first of all, read the stream's info from our registry storage
 	err := stream.Registry.ReadStreamInfo(stream)
