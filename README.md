@@ -27,7 +27,7 @@ The state of the beat is saved in a user-specified S3 bucket on a
 per-stream basis. This way, the beat knows what is the last event that
 was harvested per stream and can resume its operation once restarted.
 
-The beat if fully concurrent in terms of the monitored log groups and
+The beat is fully concurrent in terms of the monitored log groups and
 streams and makes use of AWS SDK's exponential back-off retry policy
 for all its requests to the AWS APIs. However, the beat's operation is
 subject to AWS limitations and throttling policies which are
