@@ -17,21 +17,30 @@ responsibility for any kind of damage that may occur as a result.
 # Description
 
 Cloudwatchlogsbeat operates by monitoring a set of AWS Cloudwatch Log
-Groups specified in
-its [configuration](cloudwatchlogsbeat.full.yml). The log groups are
+Groups specified in its [configuration](cloudwatchlogsbeat.full.yml),
+which also defines a set of configuration values that influence the
+beat's operational behaviour. In general, the log groups are
 periodically probed for new streams which are then polled for new
 events.
-
-The beat if fully concurrent in terms of the monitored log groups and
-streams and makes use of AWS SDK's exponential back-off retry policy
-for all its requests to the AWS APIs to avoid throttling errors. Any
-throttling errors that will inevitably occur (due to maximum retries
-for example) are dealt with gracefully without losing stream events
-(stream monitoring is resumed from where it left off).
 
 The state of the beat is saved in a user-specified S3 bucket on a
 per-stream basis. This way, the beat knows what is the last event that
 was harvested per stream and can resume its operation once restarted.
+
+The beat if fully concurrent in terms of the monitored log groups and
+streams and makes use of AWS SDK's exponential back-off retry policy
+for all its requests to the AWS APIs. However, the beat's operation is
+subject to AWS limitations and throttling policies which are
+summarized
+[here](http://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/cloudwatch_limits_cwl.html).
+
+Throttling errors are dealt with gracefully without losing stream
+events (stream monitoring is resumed from where it left off) and can
+be mitigated to some degree by tuning the beat's configuration with
+respect to the various refresh frequencies. The beat also defines two
+kinds of streams, frequently updated (aka hot) and standard, which can
+be configured differently to further control/reduce the rate of AWS
+API requests.
 
 # Setup / Installation
 
@@ -78,22 +87,6 @@ logs:FilterLogEvents
 logs:Describe*
 ```
 plus `s3:*` on the S3 bucket resource.
-
-# Beat configuration
-
-The beat's operation is controlled by customizing the settings in the
-configuration file, an example of which
-is [included in this repo](cloudwatchlogsbeat.full.yml). The beat's
-operation is subject to AWS limitations and throttling policies which
-are
-summarized
-[here](http://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/cloudwatch_limits_cwl.html).
-
-Throttling errors can be mitigated to some degree by tuning the beat's
-configuration with respect to the various refresh frequencies. The
-beat also defines two kinds of streams, frequently updated (aka hot)
-and standard, which can be configured differently to further
-control/reduce the rate of AWS API requests.
 
 # Tests
 
