@@ -28,6 +28,7 @@ func NewGroup(name string, prospector *Prospector, config *Config, registry Regi
 	return &Group{
 		name:       name,
 		prospector: prospector,
+		config:     config,
 		registry:   registry,
 		client:     client,
 		publisher:  publisher,
