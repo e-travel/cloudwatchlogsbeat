@@ -1,7 +1,8 @@
-package beater
+package cwl
 
 import (
 	"github.com/elastic/beats/libbeat/common"
+	"github.com/elastic/beats/libbeat/publisher"
 )
 
 type Event struct {
@@ -14,15 +15,17 @@ type EventPublisher interface {
 	Publish(event *Event)
 }
 
-type Publisher struct{}
+type Publisher struct {
+	Client publisher.Client
+}
 
 func (publisher Publisher) Publish(event *Event) {
-	event.Stream.Group.Beat.Client.PublishEvent(common.MapStr{
+	publisher.Client.PublishEvent(common.MapStr{
 		"@timestamp": common.Time(ToTime(event.Timestamp)),
-		"prospector": event.Stream.Group.Prospector.Id,
-		"type":       event.Stream.Group.Prospector.Id,
+		"prospector": event.Stream.Group.prospector.Id,
+		"type":       event.Stream.Group.prospector.Id,
 		"message":    event.Message,
-		"group":      event.Stream.Group.Name,
+		"group":      event.Stream.Group.name,
 		"stream":     event.Stream.Name,
 	})
 }

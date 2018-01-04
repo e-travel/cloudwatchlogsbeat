@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/e-travel/cloudwatchlogsbeat/cwl"
 
 	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
@@ -28,28 +29,25 @@ type Cloudwatchlogsbeat struct {
 	Done chan struct{}
 
 	// Configuration
-	Config Config
+	Config cwl.Config
 
 	// Beat publisher client
 	Client publisher.Client
 
 	// Beat persistence layer
-	Registry Registry
+	Registry cwl.Registry
 
 	// Client to amazon cloudwatch logs API
 	AWSClient cloudwatchlogsiface.CloudWatchLogsAPI
 
-	// AWS client session
-	Session *session.Session
-
 	// the monitoring manager
-	Manager *GroupManager
+	Manager *cwl.GroupManager
 }
 
 // Creates a new cloudwatchlogsbeat
 func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	// Read configuration
-	config := Config{}
+	config := cwl.Config{}
 	if err := cfg.Unpack(&config); err != nil {
 		return nil, fmt.Errorf("Error reading config file: %v", err)
 	}
@@ -97,27 +95,24 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 
 	// Create cloudwatch session
 	svc := cloudwatchlogs.New(sess)
-	var registry Registry
+	var registry cwl.Registry
 
 	// Create beat registry
 	if config.S3BucketName == "" {
 		logp.Info("Working with in-memory registry")
-		registry = NewDummyRegistry()
+		registry = cwl.NewDummyRegistry()
 	} else {
 		logp.Info("Working with s3 registry in bucket %s", config.S3BucketName)
-		registry = NewS3Registry(s3.New(sess), config.S3BucketName)
+		registry = cwl.NewS3Registry(s3.New(sess), config.S3BucketName)
 	}
 
 	// Create instance
 	beat := &Cloudwatchlogsbeat{
 		Done:      make(chan struct{}),
 		Config:    config,
-		Session:   sess,
 		AWSClient: svc,
 		Registry:  registry,
 	}
-
-	beat.Manager = NewGroupManager(beat)
 
 	// Validate configuration
 	beat.ValidateConfig()
@@ -130,6 +125,11 @@ func (beat *Cloudwatchlogsbeat) Run(b *beat.Beat) error {
 	logp.Info("cloudwatchlogsbeat is running! Hit CTRL-C to stop it.")
 
 	beat.Client = b.Publisher.Connect()
+
+	eventPublisher := cwl.Publisher{Client: beat.Client}
+
+	beat.Manager = cwl.NewGroupManager(&beat.Config, beat.Registry, beat.AWSClient, eventPublisher)
+
 	go beat.Manager.Monitor()
 	<-beat.Done
 	return nil
@@ -145,6 +145,6 @@ func (beat *Cloudwatchlogsbeat) Stop() {
 // regular expressions are valid, ...
 func (beat *Cloudwatchlogsbeat) ValidateConfig() {
 	for _, prospector := range beat.Config.Prospectors {
-		ValidateMultiline(prospector.Multiline)
+		cwl.ValidateMultiline(prospector.Multiline)
 	}
 }

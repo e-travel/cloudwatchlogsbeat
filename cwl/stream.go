@@ -1,4 +1,4 @@
-package beater
+package cwl
 
 import (
 	"bytes"
@@ -18,6 +18,8 @@ type Stream struct {
 	Name string
 	// the group to which the stream belongs
 	Group *Group
+	// the configuration options
+	Config *Config
 	// our AWS client
 	Client cloudwatchlogsiface.CloudWatchLogsAPI
 	// parameters for stream event query
@@ -39,13 +41,12 @@ type Stream struct {
 	publishedEvents int64
 }
 
-func NewStream(name string, group *Group, client cloudwatchlogsiface.CloudWatchLogsAPI,
-	registry Registry, finished chan<- bool) *Stream {
+func NewStream(name string, group *Group, config *Config, client cloudwatchlogsiface.CloudWatchLogsAPI, publisher EventPublisher, registry Registry, finished chan<- bool) *Stream {
 
-	startTime := time.Now().UTC().Add(-group.Beat.Config.StreamEventHorizon)
+	startTime := time.Now().UTC().Add(-group.config.StreamEventHorizon)
 
 	params := &cloudwatchlogs.GetLogEventsInput{
-		LogGroupName:  aws.String(group.Name),
+		LogGroupName:  aws.String(group.name),
 		LogStreamName: aws.String(name),
 		StartFromHead: aws.Bool(true),
 		Limit:         aws.Int64(100),
@@ -55,11 +56,12 @@ func NewStream(name string, group *Group, client cloudwatchlogsiface.CloudWatchL
 	stream := &Stream{
 		Name:               name,
 		Group:              group,
+		Config:             config,
 		Client:             client,
+		Publisher:          publisher,
 		Params:             params,
 		Registry:           registry,
-		Multiline:          group.Prospector.Multiline,
-		Publisher:          Publisher{},
+		Multiline:          group.prospector.Multiline,
 		finished:           finished,
 		LastEventTimestamp: 1000 * time.Now().Unix(),
 	}
@@ -117,10 +119,10 @@ func (stream *Stream) Monitor() {
 		return
 	}
 
-	reportTicker := time.NewTicker(reportFrequency)
+	reportTicker := time.NewTicker(stream.Config.ReportFrequency)
 	defer reportTicker.Stop()
 
-	var eventRefreshFrequency = stream.Group.Beat.Config.StreamEventRefreshFrequency
+	var eventRefreshFrequency = stream.Config.StreamEventRefreshFrequency
 
 	for {
 		err := stream.Next()
@@ -129,14 +131,14 @@ func (stream *Stream) Monitor() {
 			return
 		}
 		// is the stream expired?
-		if IsBefore(stream.Group.Beat.Config.StreamEventHorizon, stream.LastEventTimestamp) {
+		if IsBefore(stream.Config.StreamEventHorizon, stream.LastEventTimestamp) {
 			return
 		}
 		// is the stream "hot"?
 		if stream.IsHot(stream.LastEventTimestamp) {
-			eventRefreshFrequency = stream.Group.Beat.Config.HotStreamEventRefreshFrequency
+			eventRefreshFrequency = stream.Config.HotStreamEventRefreshFrequency
 		} else {
-			eventRefreshFrequency = stream.Group.Beat.Config.StreamEventRefreshFrequency
+			eventRefreshFrequency = stream.Config.StreamEventRefreshFrequency
 		}
 		select {
 		case <-reportTicker.C:
@@ -148,17 +150,17 @@ func (stream *Stream) Monitor() {
 }
 
 func (stream *Stream) IsHot(lastEventTimestamp int64) bool {
-	return !IsBefore(stream.Group.Beat.Config.HotStreamEventHorizon, lastEventTimestamp)
+	return !IsBefore(stream.Config.HotStreamEventHorizon, lastEventTimestamp)
 }
 
 func (stream *Stream) report() {
 	logp.Info("report[stream] %d %s %s",
-		stream.publishedEvents, stream.FullName(), reportFrequency)
+		stream.publishedEvents, stream.FullName(), stream.Config.ReportFrequency)
 	stream.publishedEvents = 0
 }
 
 func (stream *Stream) FullName() string {
-	return fmt.Sprintf("%s/%s", stream.Group.Name, stream.Name)
+	return fmt.Sprintf("%s/%s", stream.Group.name, stream.Name)
 }
 
 // fills the buffer's contents into the event,
