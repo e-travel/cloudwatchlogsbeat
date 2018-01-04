@@ -6,32 +6,24 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
 	"github.com/elastic/beats/libbeat/logp"
 )
 
 type Group struct {
-	name       string
-	prospector *Prospector
-	config     *Config
-	registry   Registry
-	client     cloudwatchlogsiface.CloudWatchLogsAPI
-	publisher  EventPublisher
-	streams    map[string]*Stream
-	// we'll use this mutex to synchronize access to the Streams map
-	mutex          *sync.RWMutex
+	Name           string
+	Prospector     *Prospector
+	Params         *Params
+	streams        map[string]*Stream
+	mutex          *sync.RWMutex // synchronize access to the Streams map
 	newStreams     int
 	removedStreams int
 }
 
-func NewGroup(name string, prospector *Prospector, config *Config, registry Registry, client cloudwatchlogsiface.CloudWatchLogsAPI, publisher EventPublisher) *Group {
+func NewGroup(name string, prospector *Prospector, params *Params) *Group {
 	return &Group{
-		name:       name,
-		prospector: prospector,
-		config:     config,
-		registry:   registry,
-		client:     client,
-		publisher:  publisher,
+		Name:       name,
+		Prospector: prospector,
+		Params:     params,
 		streams:    make(map[string]*Stream),
 		mutex:      &sync.RWMutex{},
 	}
@@ -39,12 +31,12 @@ func NewGroup(name string, prospector *Prospector, config *Config, registry Regi
 
 func (group *Group) RefreshStreams() {
 	params := &cloudwatchlogs.DescribeLogStreamsInput{
-		LogGroupName: aws.String(group.name),
+		LogGroupName: aws.String(group.Name),
 		Descending:   aws.Bool(true),
 		OrderBy:      aws.String("LastEventTime"),
 	}
 
-	err := group.client.DescribeLogStreamsPages(
+	err := group.Params.AWSClient.DescribeLogStreamsPages(
 		params,
 		func(page *cloudwatchlogs.DescribeLogStreamsOutput, lastPage bool) bool {
 			for _, logStream := range page.LogStreams {
@@ -55,11 +47,11 @@ func (group *Group) RefreshStreams() {
 				group.mutex.RUnlock()
 				// is this an empty stream?
 				if logStream.LastEventTimestamp == nil {
-					logp.Debug("GROUP", "%s/%s has a nil timestamp", group.name, name)
+					logp.Debug("GROUP", "%s/%s has a nil timestamp", group.Name, name)
 					continue
 				}
 				// is the stream expired?
-				expired := IsBefore(group.config.StreamEventHorizon,
+				expired := IsBefore(group.Params.Config.StreamEventHorizon,
 					*logStream.LastEventTimestamp)
 				// is this a stream that we're not monitoring and it is not expired?
 				if !ok && !expired {
@@ -69,12 +61,12 @@ func (group *Group) RefreshStreams() {
 			return true
 		})
 	if err != nil {
-		logp.Err("%s %s", group.name, err.Error())
+		logp.Err("%s %s", group.Name, err.Error())
 	}
 }
 
 func (group *Group) removeStream(stream *Stream) {
-	logp.Info("Stop monitoring stream %s for group %s", stream.Name, group.name)
+	logp.Info("Stop monitoring stream %s for group %s", stream.Name, group.Name)
 	group.mutex.Lock()
 	delete(group.streams, stream.Name)
 	group.mutex.Unlock()
@@ -83,8 +75,8 @@ func (group *Group) removeStream(stream *Stream) {
 
 func (group *Group) addNewStream(name string) {
 	finished := make(chan bool)
-	stream := NewStream(name, group, group.config, group.client, group.publisher, group.registry, finished)
-	logp.Info("Start monitoring stream %s for group %s", stream.Name, group.name)
+	stream := NewStream(name, group, group.Prospector.Multiline, finished, group.Params)
+	logp.Info("Start monitoring stream %s for group %s", stream.Name, group.Name)
 	group.mutex.Lock()
 	group.streams[name] = stream
 	group.mutex.Unlock()
@@ -97,11 +89,11 @@ func (group *Group) addNewStream(name string) {
 }
 
 func (group *Group) Monitor() {
-	logp.Info("[group] %s started", group.name)
-	defer logp.Info("[group] %s stopped", group.name)
-	reportTicker := time.NewTicker(group.config.ReportFrequency)
+	logp.Info("[group] %s started", group.Name)
+	defer logp.Info("[group] %s stopped", group.Name)
+	reportTicker := time.NewTicker(group.Params.Config.ReportFrequency)
 	defer reportTicker.Stop()
-	streamRefreshTicker := time.NewTicker(group.config.StreamRefreshFrequency)
+	streamRefreshTicker := time.NewTicker(group.Params.Config.StreamRefreshFrequency)
 	defer streamRefreshTicker.Stop()
 	for {
 		select {
@@ -115,7 +107,7 @@ func (group *Group) Monitor() {
 
 func (group *Group) report() {
 	n := len(group.streams)
-	logp.Info("report[group] %d %d %d %s %s", n, group.newStreams, group.removedStreams, group.name, group.config.ReportFrequency)
+	logp.Info("report[group] %d %d %d %s %s", n, group.newStreams, group.removedStreams, group.Name, group.Params.Config.ReportFrequency)
 	group.newStreams = 0
 	group.removedStreams = 0
 }

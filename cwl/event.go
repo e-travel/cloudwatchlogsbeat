@@ -22,10 +22,10 @@ type Publisher struct {
 func (publisher Publisher) Publish(event *Event) {
 	publisher.Client.PublishEvent(common.MapStr{
 		"@timestamp": common.Time(ToTime(event.Timestamp)),
-		"prospector": event.Stream.Group.prospector.Id,
-		"type":       event.Stream.Group.prospector.Id,
+		"prospector": event.Stream.Group.Prospector.Id,
+		"type":       event.Stream.Group.Prospector.Id,
 		"message":    event.Message,
-		"group":      event.Stream.Group.name,
+		"group":      event.Stream.Group.Name,
 		"stream":     event.Stream.Name,
 	})
 }

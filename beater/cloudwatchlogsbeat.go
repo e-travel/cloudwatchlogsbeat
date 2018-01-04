@@ -103,7 +103,10 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 		registry = cwl.NewDummyRegistry()
 	} else {
 		logp.Info("Working with s3 registry in bucket %s", config.S3BucketName)
-		registry = cwl.NewS3Registry(s3.New(sess), config.S3BucketName)
+		registry = &cwl.S3Registry{
+			S3Client:   s3.New(sess),
+			BucketName: config.S3BucketName,
+		}
 	}
 
 	// Create instance
@@ -126,9 +129,13 @@ func (beat *Cloudwatchlogsbeat) Run(b *beat.Beat) error {
 
 	beat.Client = b.Publisher.Connect()
 
-	eventPublisher := cwl.Publisher{Client: beat.Client}
-
-	beat.Manager = cwl.NewGroupManager(&beat.Config, beat.Registry, beat.AWSClient, eventPublisher)
+	params := &cwl.Params{
+		Config:    &beat.Config,
+		Registry:  beat.Registry,
+		AWSClient: beat.AWSClient,
+		Publisher: cwl.Publisher{Client: beat.Client},
+	}
+	beat.Manager = cwl.NewGroupManager(params)
 
 	go beat.Manager.Monitor()
 	<-beat.Done

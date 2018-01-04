@@ -13,5 +13,5 @@ type RegistryItem struct {
 }
 
 func generateKey(stream *Stream) string {
-	return fmt.Sprintf("%v/%v", stream.Group.name, stream.Name)
+	return fmt.Sprintf("%v/%v", stream.Group.Name, stream.Name)
 }

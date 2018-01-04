@@ -20,17 +20,17 @@ func (registry *DummyRegistry) ReadStreamInfo(stream *Stream) error {
 	item, ok := registry.entries[key]
 	registry.entriesLock.RUnlock()
 	if ok {
-		stream.Params.NextToken = &item.NextToken
-		stream.Buffer.Reset()
-		stream.Buffer.WriteString(item.Buffer)
+		stream.queryParams.NextToken = &item.NextToken
+		stream.buffer.Reset()
+		stream.buffer.WriteString(item.Buffer)
 	}
 	return nil
 }
 
 func (registry *DummyRegistry) WriteStreamInfo(stream *Stream) error {
 	item := RegistryItem{
-		NextToken: *stream.Params.NextToken,
-		Buffer:    stream.Buffer.String(),
+		NextToken: *stream.queryParams.NextToken,
+		Buffer:    stream.buffer.String(),
 	}
 	key := generateKey(stream)
 	registry.entriesLock.Lock()

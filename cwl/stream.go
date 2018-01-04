@@ -10,43 +10,32 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
 )
 
 type Stream struct {
-	// the stream's name
-	Name string
-	// the group to which the stream belongs
-	Group *Group
-	// the configuration options
-	Config *Config
-	// our AWS client
-	Client cloudwatchlogsiface.CloudWatchLogsAPI
-	// parameters for stream event query
-	Params *cloudwatchlogs.GetLogEventsInput
-	// the stream registry storage
-	Registry Registry
+	Name   string
+	Group  *Group
+	Params *Params
+
+	queryParams *cloudwatchlogs.GetLogEventsInput
+
 	// This is used for multi line mode. We store all text needed until we find
 	// the end of message
-	Buffer     bytes.Buffer
-	Multiline  *Multiline
-	MultiRegex *regexp.Regexp
-	// the publisher for our events
-	Publisher EventPublisher
-	// the last event that we've processed (in milliseconds since 1970)
-	LastEventTimestamp int64
-	// channel for the stream to signal that its processing is over
-	finished chan<- bool
-	// number of published events
-	publishedEvents int64
+	buffer     bytes.Buffer
+	multiline  *Multiline
+	multiRegex *regexp.Regexp // cached regex for performance
+
+	LastEventTimestamp int64       // the last event that we've processed (in milliseconds since 1970)
+	finished           chan<- bool // channel for the stream to signal that its processing is over
+	publishedEvents    int64       // number of published events
 }
 
-func NewStream(name string, group *Group, config *Config, client cloudwatchlogsiface.CloudWatchLogsAPI, publisher EventPublisher, registry Registry, finished chan<- bool) *Stream {
+func NewStream(name string, group *Group, multiline *Multiline, finished chan<- bool, params *Params) *Stream {
 
-	startTime := time.Now().UTC().Add(-group.config.StreamEventHorizon)
+	startTime := time.Now().UTC().Add(-params.Config.StreamEventHorizon)
 
-	params := &cloudwatchlogs.GetLogEventsInput{
-		LogGroupName:  aws.String(group.name),
+	queryParams := &cloudwatchlogs.GetLogEventsInput{
+		LogGroupName:  aws.String(group.Name),
 		LogStreamName: aws.String(name),
 		StartFromHead: aws.Bool(true),
 		Limit:         aws.Int64(100),
@@ -56,12 +45,9 @@ func NewStream(name string, group *Group, config *Config, client cloudwatchlogsi
 	stream := &Stream{
 		Name:               name,
 		Group:              group,
-		Config:             config,
-		Client:             client,
-		Publisher:          publisher,
 		Params:             params,
-		Registry:           registry,
-		Multiline:          group.prospector.Multiline,
+		queryParams:        queryParams,
+		multiline:          multiline,
 		finished:           finished,
 		LastEventTimestamp: 1000 * time.Now().Unix(),
 	}
@@ -69,11 +55,11 @@ func NewStream(name string, group *Group, config *Config, client cloudwatchlogsi
 	// Construct regular expression if multiline mode
 	var regx *regexp.Regexp
 	var err error
-	if stream.Multiline != nil {
-		regx, err = regexp.Compile(stream.Multiline.Pattern)
+	if stream.multiline != nil {
+		regx, err = regexp.Compile(stream.multiline.Pattern)
 		Fatal(err)
 	}
-	stream.MultiRegex = regx
+	stream.multiRegex = regx
 
 	return stream
 }
@@ -83,7 +69,7 @@ func NewStream(name string, group *Group, config *Config, client cloudwatchlogsi
 func (stream *Stream) Next() error {
 	var err error
 
-	output, err := stream.Client.GetLogEvents(stream.Params)
+	output, err := stream.Params.AWSClient.GetLogEvents(stream.queryParams)
 	if err != nil {
 		return err
 	}
@@ -97,8 +83,8 @@ func (stream *Stream) Next() error {
 		stream.digest(streamEvent)
 		stream.LastEventTimestamp = aws.Int64Value(streamEvent.Timestamp)
 	}
-	stream.Params.NextToken = output.NextForwardToken
-	err = stream.Registry.WriteStreamInfo(stream)
+	stream.queryParams.NextToken = output.NextForwardToken
+	err = stream.Params.Registry.WriteStreamInfo(stream)
 	return err
 }
 
@@ -114,15 +100,15 @@ func (stream *Stream) Monitor() {
 	}()
 
 	// first of all, read the stream's info from our registry storage
-	err := stream.Registry.ReadStreamInfo(stream)
+	err := stream.Params.Registry.ReadStreamInfo(stream)
 	if err != nil {
 		return
 	}
 
-	reportTicker := time.NewTicker(stream.Config.ReportFrequency)
+	reportTicker := time.NewTicker(stream.Params.Config.ReportFrequency)
 	defer reportTicker.Stop()
 
-	var eventRefreshFrequency = stream.Config.StreamEventRefreshFrequency
+	var eventRefreshFrequency = stream.Params.Config.StreamEventRefreshFrequency
 
 	for {
 		err := stream.Next()
@@ -131,14 +117,14 @@ func (stream *Stream) Monitor() {
 			return
 		}
 		// is the stream expired?
-		if IsBefore(stream.Config.StreamEventHorizon, stream.LastEventTimestamp) {
+		if IsBefore(stream.Params.Config.StreamEventHorizon, stream.LastEventTimestamp) {
 			return
 		}
 		// is the stream "hot"?
 		if stream.IsHot(stream.LastEventTimestamp) {
-			eventRefreshFrequency = stream.Config.HotStreamEventRefreshFrequency
+			eventRefreshFrequency = stream.Params.Config.HotStreamEventRefreshFrequency
 		} else {
-			eventRefreshFrequency = stream.Config.StreamEventRefreshFrequency
+			eventRefreshFrequency = stream.Params.Config.StreamEventRefreshFrequency
 		}
 		select {
 		case <-reportTicker.C:
@@ -150,28 +136,28 @@ func (stream *Stream) Monitor() {
 }
 
 func (stream *Stream) IsHot(lastEventTimestamp int64) bool {
-	return !IsBefore(stream.Config.HotStreamEventHorizon, lastEventTimestamp)
+	return !IsBefore(stream.Params.Config.HotStreamEventHorizon, lastEventTimestamp)
 }
 
 func (stream *Stream) report() {
 	logp.Info("report[stream] %d %s %s",
-		stream.publishedEvents, stream.FullName(), stream.Config.ReportFrequency)
+		stream.publishedEvents, stream.FullName(), stream.Params.Config.ReportFrequency)
 	stream.publishedEvents = 0
 }
 
 func (stream *Stream) FullName() string {
-	return fmt.Sprintf("%s/%s", stream.Group.name, stream.Name)
+	return fmt.Sprintf("%s/%s", stream.Group.Name, stream.Name)
 }
 
 // fills the buffer's contents into the event,
 // publishes the message and empties the buffer
 func (stream *Stream) publish(event *Event) {
-	if stream.Buffer.Len() == 0 {
+	if stream.buffer.Len() == 0 {
 		return
 	}
-	event.Message = stream.Buffer.String()
-	stream.Publisher.Publish(event)
-	stream.Buffer.Reset()
+	event.Message = stream.buffer.String()
+	stream.Params.Publisher.Publish(event)
+	stream.buffer.Reset()
 	stream.publishedEvents++
 }
 
@@ -180,19 +166,19 @@ func (stream *Stream) digest(streamEvent *cloudwatchlogs.OutputLogEvent) {
 		Stream:    stream,
 		Timestamp: aws.Int64Value(streamEvent.Timestamp),
 	}
-	if stream.Multiline == nil {
-		stream.Buffer.WriteString(*streamEvent.Message)
+	if stream.multiline == nil {
+		stream.buffer.WriteString(*streamEvent.Message)
 		stream.publish(event)
 	} else {
-		switch stream.Multiline.Match {
+		switch stream.multiline.Match {
 		case "after":
-			if stream.MultiRegex.MatchString(*streamEvent.Message) == stream.Multiline.Negate {
+			if stream.multiRegex.MatchString(*streamEvent.Message) == stream.multiline.Negate {
 				stream.publish(event)
 			}
-			stream.Buffer.WriteString(*streamEvent.Message)
+			stream.buffer.WriteString(*streamEvent.Message)
 		case "before":
-			stream.Buffer.WriteString(*streamEvent.Message)
-			if stream.MultiRegex.MatchString(*streamEvent.Message) == stream.Multiline.Negate {
+			stream.buffer.WriteString(*streamEvent.Message)
+			if stream.multiRegex.MatchString(*streamEvent.Message) == stream.multiline.Negate {
 				stream.publish(event)
 			}
 		}
