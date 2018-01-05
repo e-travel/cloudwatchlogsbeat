@@ -13,29 +13,29 @@ func Test_Dummy_ReadStreamInfo_WhenObjectFound_UpdatesStream(t *testing.T) {
 	registry := NewDummyRegistry()
 	stream := &Stream{
 		Name: "stream_name",
-		Params: &cloudwatchlogs.GetLogEventsInput{
-			NextToken: aws.String("token"),
-		},
-		Buffer: *bytes.NewBufferString("This is the buffer"),
 		Group: &Group{
 			Name: "group_name",
 		},
+		queryParams: &cloudwatchlogs.GetLogEventsInput{
+			NextToken: aws.String("token"),
+		},
+		buffer: *bytes.NewBufferString("This is the buffer"),
 	}
 	// persist the stream
 	registry.WriteStreamInfo(stream)
 	// reset the stream
 	stream = &Stream{
-		Name:   "stream_name",
-		Params: &cloudwatchlogs.GetLogEventsInput{},
+		Name: "stream_name",
 		Group: &Group{
 			Name: "group_name",
 		},
+		queryParams: &cloudwatchlogs.GetLogEventsInput{},
 	}
 	// read the stream back
 	registry.ReadStreamInfo(stream)
 	// assert
-	assert.Equal(t, "token", *stream.Params.NextToken)
-	assert.Equal(t, "This is the buffer", stream.Buffer.String())
+	assert.Equal(t, "token", *stream.queryParams.NextToken)
+	assert.Equal(t, "This is the buffer", stream.buffer.String())
 }
 
 func Test_Dummy_ReadStreamInfo_WhenObjectNotFound_ReturnsNil(t *testing.T) {
@@ -56,13 +56,13 @@ func Test_Dummy_WriteStreamInfo_AddsItemToRegistry(t *testing.T) {
 	registry := NewDummyRegistry().(*DummyRegistry)
 	stream := &Stream{
 		Name: "stream_name",
-		Params: &cloudwatchlogs.GetLogEventsInput{
-			NextToken: aws.String("token"),
-		},
-		Buffer: *bytes.NewBufferString("This is the buffer"),
 		Group: &Group{
 			Name: "group_name",
 		},
+		queryParams: &cloudwatchlogs.GetLogEventsInput{
+			NextToken: aws.String("token"),
+		},
+		buffer: *bytes.NewBufferString("This is the buffer"),
 	}
 	// persist the stream
 	registry.WriteStreamInfo(stream)

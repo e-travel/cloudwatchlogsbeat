@@ -16,16 +16,18 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 	eventTimestamp := TimeBeforeNowInMilliseconds(30 * time.Minute)
 	client := &MockCWLClient{}
 	registry := &MockRegistry{}
-	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
-	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
-	beat := &Cloudwatchlogsbeat{
-		AWSClient: client,
-		Registry:  registry,
-		Config: Config{
-			StreamEventHorizon: horizon,
-		},
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*cwl.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*cwl.Stream")).Return(nil)
+	config := &Config{
+		StreamEventHorizon: horizon,
+		ReportFrequency:    1 * time.Minute,
 	}
-	group := NewGroup("group", &Prospector{}, beat)
+	params := &Params{
+		Config:    config,
+		Registry:  registry,
+		AWSClient: client,
+	}
+	group := NewGroup("group", &Prospector{}, params)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			&cloudwatchlogs.LogStream{
@@ -53,8 +55,8 @@ func Test_Group_WillAdd_NewStream(t *testing.T) {
 
 	// go!
 	group.RefreshStreams()
-	assert.Equal(t, 1, len(group.Streams))
-	_, ok := group.Streams["stream_name"]
+	assert.Equal(t, 1, len(group.streams))
+	_, ok := group.streams["stream_name"]
 	assert.True(t, ok)
 }
 
@@ -64,17 +66,18 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 	eventTimestamp := TimeBeforeNowInMilliseconds(2 * time.Hour)
 	client := &MockCWLClient{}
 	registry := &MockRegistry{}
-	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
-	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
-
-	beat := &Cloudwatchlogsbeat{
-		AWSClient: client,
-		Registry:  registry,
-		Config: Config{
-			StreamEventHorizon: horizon,
-		},
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*cwl.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*cwl.Stream")).Return(nil)
+	config := &Config{
+		StreamEventHorizon: horizon,
+		ReportFrequency:    1 * time.Minute,
 	}
-	group := NewGroup("group", &Prospector{}, beat)
+	params := &Params{
+		Config:    config,
+		Registry:  registry,
+		AWSClient: client,
+	}
+	group := NewGroup("group", &Prospector{}, params)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			&cloudwatchlogs.LogStream{
@@ -102,7 +105,7 @@ func Test_Group_WillNotAdd_NewExpiredStream(t *testing.T) {
 
 	// go!
 	group.RefreshStreams()
-	assert.Equal(t, 0, len(group.Streams))
+	assert.Equal(t, 0, len(group.streams))
 }
 
 func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
@@ -110,18 +113,20 @@ func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
 	horizon := 2 * time.Hour
 	eventTimestamp := TimeBeforeNowInMilliseconds(1 * time.Hour)
 	registry := &MockRegistry{}
-	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
-	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*cwl.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*cwl.Stream")).Return(nil)
 
 	client := &MockCWLClient{}
-	beat := &Cloudwatchlogsbeat{
-		AWSClient: client,
-		Registry:  registry,
-		Config: Config{
-			StreamEventHorizon: horizon,
-		},
+	config := &Config{
+		StreamEventHorizon: horizon,
+		ReportFrequency:    1 * time.Minute,
 	}
-	group := NewGroup("group", &Prospector{}, beat)
+	params := &Params{
+		Config:    config,
+		Registry:  registry,
+		AWSClient: client,
+	}
+	group := NewGroup("group", &Prospector{}, params)
 	output := &cloudwatchlogs.DescribeLogStreamsOutput{
 		LogStreams: []*cloudwatchlogs.LogStream{
 			// the problematic stream
@@ -154,7 +159,7 @@ func Test_Group_WillSkip_StreamWithNoLastEventTimestamp(t *testing.T) {
 
 	// go!
 	group.RefreshStreams()
-	assert.Equal(t, 1, len(group.Streams))
-	_, ok := group.Streams["problematic_stream"]
+	assert.Equal(t, 1, len(group.streams))
+	_, ok := group.streams["problematic_stream"]
 	assert.False(t, ok)
 }

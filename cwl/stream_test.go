@@ -15,9 +15,6 @@ func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 	group := &Group{
 		Name:       "group",
 		Prospector: &Prospector{},
-		Beat: &Cloudwatchlogsbeat{
-			Config: Config{},
-		},
 	}
 
 	// stub our expected events
@@ -31,25 +28,31 @@ func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 
 	// stub the registry functions
 	registry := &MockRegistry{}
-	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
-	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
-	// create the stream
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*cwl.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*cwl.Stream")).Return(nil)
+	// stub the client
 	client := &MockCWLClient{}
-	stream := NewStream("TestStream", group, client, registry, make(chan bool))
-	publisher := &MockPublisher{}
-	stream.Publisher = publisher
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
+		&cloudwatchlogs.GetLogEventsOutput{
+			Events: receivedEvents,
+		}, nil)
 	// stub the publisher
-	publisher.On("Publish", mock.AnythingOfType("*beater.Event")).Return().Run(
+	publisher := &MockPublisher{}
+	// stub the publisher
+	publisher.On("Publish", mock.AnythingOfType("*cwl.Event")).Return().Run(
 		func(args mock.Arguments) {
 			event := args.Get(0).(*Event)
 			// add the event to the actual events
 			events = append(events, event)
 		})
-	// stub the log events
-	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
-		&cloudwatchlogs.GetLogEventsOutput{
-			Events: receivedEvents,
-		}, nil)
+	params := &Params{
+		Config:    &Config{},
+		Registry:  registry,
+		AWSClient: client,
+		Publisher: publisher,
+	}
+
+	stream := NewStream("TestStream", group, group.Prospector.Multiline, make(chan bool), params)
 	// fire!
 	stream.Next()
 	// assert
@@ -58,28 +61,30 @@ func Test_Stream_Next_WillGenerateCorrectNumberOfEvents(t *testing.T) {
 
 // test stream cleanup (a message will be sent to the finished channel)
 func Test_Stream_ShouldSendACleanupEvent_OnError(t *testing.T) {
-	client := &MockCWLClient{}
-	beat := &Cloudwatchlogsbeat{
-		AWSClient: client,
-		Registry:  &MockRegistry{},
-	}
-
-	group := NewGroup("group", &Prospector{}, beat)
+	group := &Group{Name: "group", Prospector: &Prospector{}}
 
 	// stub GetLogEvents to return the error
-	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
-		nil, awserr.New(cloudwatchlogs.ErrCodeInvalidOperationException, "Error", nil))
+	client := &MockCWLClient{}
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).
+		Return(nil, awserr.New(cloudwatchlogs.ErrCodeInvalidOperationException, "Error", nil))
+	// stub the log events
+	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).
+		Return(nil, awserr.New(cloudwatchlogs.ErrCodeInvalidOperationException, "Error", nil))
 
 	// stub the registry functions
 	registry := &MockRegistry{}
-	registry.On("ReadStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
-	registry.On("WriteStreamInfo", mock.AnythingOfType("*beater.Stream")).Return(nil)
+	registry.On("ReadStreamInfo", mock.AnythingOfType("*cwl.Stream")).Return(nil)
+	registry.On("WriteStreamInfo", mock.AnythingOfType("*cwl.Stream")).Return(nil)
+	params := &Params{
+		Config:    &Config{ReportFrequency: 1 * time.Minute},
+		Registry:  registry,
+		AWSClient: client,
+		Publisher: &MockPublisher{},
+	}
 	// create the finished channel
 	finished := make(chan bool)
-	stream := NewStream("TestStream", group, client, registry, finished)
-	// stub the log events
-	client.On("GetLogEvents", mock.AnythingOfType("*cloudwatchlogs.GetLogEventsInput")).Return(
-		nil, awserr.New(cloudwatchlogs.ErrCodeInvalidOperationException, "Error", nil))
+	stream := NewStream("TestStream", group, group.Prospector.Multiline, finished, params)
+
 	// fire!
 	go stream.Monitor()
 	// capture and assert the event
@@ -93,75 +98,49 @@ func Test_Stream_ShouldSendACleanupEvent_OnExpiring(t *testing.T) {
 
 func Test_StreamParams_HaveTheCorrectStartTime(t *testing.T) {
 	horizon := time.Hour
-	group := &Group{
-		Name:       "group",
-		Prospector: &Prospector{},
-		Beat: &Cloudwatchlogsbeat{
-			Config: Config{
-				StreamEventHorizon: horizon,
-			},
-		},
-	}
+	config := &Config{StreamEventHorizon: horizon}
+	params := &Params{Config: config}
+	group := &Group{Name: "group", Prospector: &Prospector{}, Params: params}
 
 	// create the stream
-	stream := NewStream("TestStream", group, nil, nil, nil)
+	stream := NewStream("TestStream", group, group.Prospector.Multiline, nil, params)
 	// create the events
 	event1 := CreateOutputLogEventWithTimestamp("Event 1\n", TimeBeforeNowInMilliseconds(2*time.Hour))
 	event2 := CreateOutputLogEventWithTimestamp("Event 2\n", TimeBeforeNowInMilliseconds(30*time.Minute))
-	startTime := aws.Int64Value(stream.Params.StartTime)
+	startTime := aws.Int64Value(stream.queryParams.StartTime)
 	// assert
 	assert.True(t, *event1.Timestamp < startTime)
 	assert.True(t, *event2.Timestamp > startTime)
 }
 
 func Test_Stream_IsHot_WhenLastTimestamp_Is_Within_HotStreamEventHorizon(t *testing.T) {
-	group := &Group{
-		Name:       "group",
-		Prospector: &Prospector{},
-		Beat: &Cloudwatchlogsbeat{
-			Config: Config{
-				HotStreamEventHorizon: 10 * time.Minute,
-			},
-		},
-	}
+	config := &Config{HotStreamEventHorizon: 10 * time.Minute}
+	params := &Params{Config: config}
+	group := &Group{Name: "group", Prospector: &Prospector{}, Params: params}
 	// create the stream
-	stream := NewStream("TestStream", group, nil, nil, nil)
+	stream := NewStream("TestStream", group, nil, nil, params)
 	lastEventTimestamp := TimeBeforeNowInMilliseconds(5 * time.Minute)
 	// assert
 	assert.True(t, stream.IsHot(lastEventTimestamp))
-
 }
 
 func Test_Stream_IsNotHot_WhenLastTimestamp_Is_Before_HotStreamEventHorizon(t *testing.T) {
-	group := &Group{
-		Name:       "group",
-		Prospector: &Prospector{},
-		Beat: &Cloudwatchlogsbeat{
-			Config: Config{
-				HotStreamEventHorizon: 10 * time.Minute,
-			},
-		},
-	}
+	config := &Config{HotStreamEventHorizon: 10 * time.Minute}
+	params := &Params{Config: config}
+	group := &Group{Name: "group", Prospector: &Prospector{}, Params: params}
 	// create the stream
-	stream := NewStream("TestStream", group, nil, nil, nil)
+	stream := NewStream("TestStream", group, nil, nil, params)
 	lastEventTimestamp := TimeBeforeNowInMilliseconds(20 * time.Minute)
 	// assert
 	assert.False(t, stream.IsHot(lastEventTimestamp))
-
 }
 
 func Test_Stream_IsNotHot_When_HotStreamEventHorizon_IsZero(t *testing.T) {
-	group := &Group{
-		Name:       "group",
-		Prospector: &Prospector{},
-		Beat: &Cloudwatchlogsbeat{
-			Config: Config{
-				HotStreamEventHorizon: time.Duration(0),
-			},
-		},
-	}
+	config := &Config{HotStreamEventHorizon: time.Duration(0)}
+	params := &Params{Config: config}
+	group := &Group{Name: "group", Prospector: &Prospector{}, Params: params}
 	// create the stream
-	stream := NewStream("TestStream", group, nil, nil, nil)
+	stream := NewStream("TestStream", group, nil, nil, params)
 	lastEventTimestamp := TimeBeforeNowInMilliseconds(time.Duration(0))
 	// assert
 	assert.False(t, stream.IsHot(lastEventTimestamp))

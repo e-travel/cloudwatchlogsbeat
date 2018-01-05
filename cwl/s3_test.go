@@ -42,9 +42,9 @@ var group = &Group{
 	Name: "group",
 }
 var stream = &Stream{
-	Name:   "stream",
-	Group:  group,
-	Params: &cloudwatchlogs.GetLogEventsInput{},
+	Name:        "stream",
+	Group:       group,
+	queryParams: &cloudwatchlogs.GetLogEventsInput{},
 }
 
 func Test_S3_ReadStreamInfo_WhenGetObjectNotFound_ReturnsNil(t *testing.T) {
@@ -53,7 +53,7 @@ func Test_S3_ReadStreamInfo_WhenGetObjectNotFound_ReturnsNil(t *testing.T) {
 			return nil, awserr.New(s3.ErrCodeNoSuchKey, "Does not exist", nil)
 		},
 	}
-	registry := NewS3Registry(client, "the_bucket_name")
+	registry := S3Registry{S3Client: client, BucketName: "the_bucket_name"}
 	err := registry.ReadStreamInfo(stream)
 	assert.Nil(t, err)
 }
@@ -64,7 +64,7 @@ func Test_S3_ReadStreamInfo_WhenBucketDoesNotExist_ReturnsError(t *testing.T) {
 			return nil, awserr.New(s3.ErrCodeNoSuchBucket, "Does not exist", nil)
 		},
 	}
-	registry := NewS3Registry(client, "the_bucket_name")
+	registry := S3Registry{S3Client: client, BucketName: "the_bucket_name"}
 	err := registry.ReadStreamInfo(stream).(awserr.Error)
 	assert.Equal(t, s3.ErrCodeNoSuchBucket, err.Code())
 }
@@ -80,16 +80,16 @@ func Test_S3_ReadStreamInfo_WhenItemExists_ShouldUpdateStream(t *testing.T) {
 			}, nil
 		},
 	}
-	registry := NewS3Registry(client, "the_bucket_name")
+	registry := S3Registry{S3Client: client, BucketName: "the_bucket_name"}
 	err := registry.ReadStreamInfo(stream)
 	assert.Nil(t, err)
-	assert.Equal(t, "abcde", *stream.Params.NextToken)
-	assert.Equal(t, "This is the buffer", stream.Buffer.String())
+	assert.Equal(t, "abcde", *stream.queryParams.NextToken)
+	assert.Equal(t, "This is the buffer", stream.buffer.String())
 }
 
 func Test_S3_WriteStreamInfo_ShouldReturnNil_OnSuccess(t *testing.T) {
-	stream.Buffer = *bytes.NewBufferString("This is the buffer")
-	stream.Params.NextToken = aws.String("abcde")
+	stream.buffer = *bytes.NewBufferString("This is the buffer")
+	stream.queryParams.NextToken = aws.String("abcde")
 	client := &MockS3Client{
 		PutObjectStub: func(input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
 			body := &bytes.Buffer{}
@@ -102,18 +102,18 @@ func Test_S3_WriteStreamInfo_ShouldReturnNil_OnSuccess(t *testing.T) {
 			return nil, nil
 		},
 	}
-	registry := NewS3Registry(client, "the_bucket_name")
+	registry := S3Registry{S3Client: client, BucketName: "the_bucket_name"}
 	registry.WriteStreamInfo(stream)
 }
 
 func Test_S3_WriteStreamInfo_ShouldReturnError_OnError(t *testing.T) {
-	stream.Params.NextToken = aws.String("abcde")
+	stream.queryParams.NextToken = aws.String("abcde")
 	client := &MockS3Client{
 		PutObjectStub: func(input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
 			return nil, errors.New("S3 Error")
 		},
 	}
-	registry := NewS3Registry(client, "the_bucket_name")
+	registry := S3Registry{S3Client: client, BucketName: "the_bucket_name"}
 	err := registry.WriteStreamInfo(stream)
 	assert.Equal(t, "S3 Error", err.Error())
 }
