@@ -4,41 +4,28 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/e-travel/cloudwatchlogsbeat/cwl"
 
 	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
-	"github.com/elastic/beats/libbeat/publisher"
 )
 
-// global report variable
-var reportFrequency = 5 * time.Minute
+const DefaultAWSRegion = "eu-west-1"
 
 // Our cloud beat
 type Cloudwatchlogsbeat struct {
 	// Used to terminate process
 	Done chan struct{}
 
-	// Configuration
-	Config cwl.Config
-
-	// Beat publisher client
-	Client publisher.Client
-
-	// Beat persistence layer
-	Registry cwl.Registry
-
-	// Client to amazon cloudwatch logs API
-	AWSClient cloudwatchlogsiface.CloudWatchLogsAPI
+	// cwl params
+	Params *cwl.Params
 
 	// the monitoring manager
 	Manager *cwl.GroupManager
@@ -47,14 +34,9 @@ type Cloudwatchlogsbeat struct {
 // Creates a new cloudwatchlogsbeat
 func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	// Read configuration
-	config := cwl.Config{}
-	if err := cfg.Unpack(&config); err != nil {
+	config := cwl.DefaultConfig(DefaultAWSRegion)
+	if err := cfg.Unpack(config); err != nil {
 		return nil, fmt.Errorf("Error reading config file: %v", err)
-	}
-
-	// Update report frequency
-	if config.ReportFrequency > 0 {
-		reportFrequency = config.ReportFrequency
 	}
 
 	// log the settings in use
@@ -109,16 +91,22 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 		}
 	}
 
+	// create beat publisher
+	beatClient := b.Publisher.Connect()
+
 	// Create instance
 	beat := &Cloudwatchlogsbeat{
-		Done:      make(chan struct{}),
-		Config:    config,
-		AWSClient: svc,
-		Registry:  registry,
+		Done: make(chan struct{}),
+		Params: &cwl.Params{
+			Config:    config,
+			AWSClient: svc,
+			Registry:  registry,
+			Publisher: cwl.Publisher{Client: beatClient},
+		},
 	}
 
 	// Validate configuration
-	beat.ValidateConfig()
+	config.ValidateProspectors()
 
 	return beat, nil
 }
@@ -127,15 +115,7 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 func (beat *Cloudwatchlogsbeat) Run(b *beat.Beat) error {
 	logp.Info("cloudwatchlogsbeat is running! Hit CTRL-C to stop it.")
 
-	beat.Client = b.Publisher.Connect()
-
-	params := &cwl.Params{
-		Config:    &beat.Config,
-		Registry:  beat.Registry,
-		AWSClient: beat.AWSClient,
-		Publisher: cwl.Publisher{Client: beat.Client},
-	}
-	beat.Manager = cwl.NewGroupManager(params)
+	beat.Manager = cwl.NewGroupManager(beat.Params)
 
 	go beat.Manager.Monitor()
 	<-beat.Done
@@ -144,14 +124,6 @@ func (beat *Cloudwatchlogsbeat) Run(b *beat.Beat) error {
 
 // Stops beat client
 func (beat *Cloudwatchlogsbeat) Stop() {
-	beat.Client.Close()
+	beat.Params.Publisher.Close()
 	close(beat.Done)
-}
-
-// Performs basic validation for our configuration, like our
-// regular expressions are valid, ...
-func (beat *Cloudwatchlogsbeat) ValidateConfig() {
-	for _, prospector := range beat.Config.Prospectors {
-		cwl.ValidateMultiline(prospector.Multiline)
-	}
 }

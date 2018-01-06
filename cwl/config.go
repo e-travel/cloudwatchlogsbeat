@@ -29,3 +29,22 @@ type Config struct {
 
 	Prospectors []Prospector `config:"prospectors"`
 }
+
+func DefaultConfig(awsRegion string) *Config {
+	return &Config{
+		GroupRefreshFrequency:       1 * time.Minute,
+		StreamRefreshFrequency:      20 * time.Second,
+		ReportFrequency:             1 * time.Minute,
+		AWSRegion:                   awsRegion,
+		StreamEventHorizon:          10 * time.Minute,
+		StreamEventRefreshFrequency: 5 * time.Second,
+	}
+}
+
+// stops programs if not valid
+// TODO: change this behaviour so that the consumer can decide
+func (config *Config) ValidateProspectors() {
+	for _, prospector := range config.Prospectors {
+		ValidateMultiline(prospector.Multiline)
+	}
+}

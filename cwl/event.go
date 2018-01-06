@@ -13,6 +13,7 @@ type Event struct {
 
 type EventPublisher interface {
 	Publish(event *Event)
+	Close()
 }
 
 type Publisher struct {
@@ -28,4 +29,8 @@ func (publisher Publisher) Publish(event *Event) {
 		"group":      event.Stream.Group.Name,
 		"stream":     event.Stream.Name,
 	})
+}
+
+func (publisher Publisher) Close() {
+	publisher.Client.Close()
 }

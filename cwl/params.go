@@ -1,6 +1,8 @@
 package cwl
 
-import "github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
+import (
+	"github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
+)
 
 type Params struct {
 	Config    *Config
