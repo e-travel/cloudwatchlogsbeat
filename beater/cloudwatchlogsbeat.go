@@ -5,11 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/client"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/e-travel/cloudwatchlogsbeat/cwl"
 
 	"github.com/elastic/beats/libbeat/beat"
@@ -70,13 +65,11 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	if config.AWSRegion == "" {
 		config.AWSRegion = "eu-west-1"
 	}
-	sess := session.Must(session.NewSession(&aws.Config{
-		Retryer: client.DefaultRetryer{NumMaxRetries: 10},
-		Region:  aws.String(config.AWSRegion),
-	}))
+
+	sess := cwl.NewAwsSession(config.AWSRegion)
 
 	// Create cloudwatch session
-	svc := cloudwatchlogs.New(sess)
+	svc := sess.CloudWatchLogsClient()
 	var registry cwl.Registry
 
 	// Create beat registry
@@ -86,7 +79,7 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 	} else {
 		logp.Info("Working with s3 registry in bucket %s", config.S3BucketName)
 		registry = &cwl.S3Registry{
-			S3Client:   s3.New(sess),
+			S3Client:   sess.S3Client(),
 			BucketName: config.S3BucketName,
 		}
 	}
