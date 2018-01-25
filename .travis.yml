@@ -6,7 +6,7 @@ go:
 install: true
 script:
 - go build -v
-- go test -v -cover ./beater
+- go test -v -cover ./cwl
 deploy:
   provider: releases
   api_key:
