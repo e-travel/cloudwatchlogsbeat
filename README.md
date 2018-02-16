@@ -80,13 +80,18 @@ actions that must be allowed in the IAM policy document are as
 follows:
 
 ```
-logs:DescribeLogGroups
-logs:DescribeLogStreams
 logs:GetLogEvents
 logs:FilterLogEvents
 logs:Describe*
 ```
-plus `s3:*` on the S3 bucket resource.
+
+plus permissions to the S3 bucket resource:
+```
+s3:GetObject
+s3:ListBucket
+s3:HeadObject
+s3:PutObject
+```
 
 # Tests
 
