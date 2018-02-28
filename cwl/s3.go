@@ -16,6 +16,7 @@ import (
 type S3Registry struct {
 	S3Client   s3iface.S3API
 	BucketName string
+	KeyPrefix  string
 }
 
 // func NewS3Registry(client s3iface.S3API, bucketName string) Registry {
@@ -35,7 +36,7 @@ func (registry *S3Registry) ReadStreamInfo(stream *Stream) error {
 	logp.Info("Fetching registry info for %s", key)
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(registry.BucketName),
-		Key:    aws.String(key),
+		Key:    aws.String(registry.KeyPrefix + key),
 	}
 	result, err := registry.S3Client.GetObject(input)
 	if err != nil {
@@ -86,7 +87,7 @@ func (registry *S3Registry) WriteStreamInfo(stream *Stream) error {
 	input := &s3.PutObjectInput{
 		Body:            buf,
 		Bucket:          aws.String(registry.BucketName),
-		Key:             aws.String(key),
+		Key:             aws.String(registry.KeyPrefix + key),
 		ContentEncoding: aws.String("application/json"),
 		ContentLength:   aws.Int64(int64(buf.Len())),
 	}
