@@ -23,7 +23,7 @@ aws_region: the-aws-region
 	config := Config{}
 	cfg.Unpack(&config)
 	assert.Equal(t, "the-bucket-name", config.S3BucketName)
-  assert.Equal(t, "testprefix/", config.S3KeyPrefix)
+	assert.Equal(t, "testprefix/", config.S3KeyPrefix)
 	assert.Equal(t, time.Second, config.GroupRefreshFrequency)
 	assert.Equal(t, 5*time.Second, config.StreamRefreshFrequency)
 	assert.Equal(t, 1*time.Minute, config.ReportFrequency)
