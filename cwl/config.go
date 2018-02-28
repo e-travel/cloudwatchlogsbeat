@@ -21,6 +21,7 @@ type Prospector struct {
 
 type Config struct {
 	S3BucketName           string        `config:"s3_bucket_name"`
+	S3KeyPrefix            string        `config:"s3_key_prefix"`
 	GroupRefreshFrequency  time.Duration `config:"group_refresh_frequency"`
 	StreamRefreshFrequency time.Duration `config:"stream_refresh_frequency"`
 	ReportFrequency        time.Duration `config:"report_frequency"`
@@ -64,6 +65,7 @@ func (config *Config) Validate() error {
 func (config *Config) String() string {
 	return "settings: " +
 		fmt.Sprintf("s3_bucket_name=%s", config.S3BucketName) +
+		fmt.Sprintf("|s3_key_prefix=%s", config.S3KeyPrefix) +
 		fmt.Sprintf("|aws_region=%v", config.AWSRegion) +
 		fmt.Sprintf("|group_refresh_frequency=%v", config.GroupRefreshFrequency) +
 		fmt.Sprintf("|stream_refresh_frequency=%v", config.StreamRefreshFrequency) +

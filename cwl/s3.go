@@ -16,6 +16,7 @@ import (
 type S3Registry struct {
 	S3Client   s3iface.S3API
 	BucketName string
+	KeyPrefix  string
 }
 
 // func NewS3Registry(client s3iface.S3API, bucketName string) Registry {
@@ -25,7 +26,7 @@ type S3Registry struct {
 
 func (registry *S3Registry) ReadStreamInfo(stream *Stream) error {
 	var err error
-	key := generateKey(stream)
+	key := registry.GetBucketKeyForStream(stream)
 	defer func() {
 		if err != nil {
 			logp.Warn(fmt.Sprintf("s3: failed to read key=%s [message=%s]", key, err.Error()))
@@ -80,7 +81,7 @@ func (registry *S3Registry) WriteStreamInfo(stream *Stream) error {
 	if err != nil {
 		return err
 	}
-	key := generateKey(stream)
+	key := registry.GetBucketKeyForStream(stream)
 	buf := bytes.NewReader(body)
 	// TODO: Implement expiration here?
 	input := &s3.PutObjectInput{
@@ -95,4 +96,8 @@ func (registry *S3Registry) WriteStreamInfo(stream *Stream) error {
 		logp.Warn(fmt.Sprintf("s3: failed to write key=%s [message=%s]", key, err.Error()))
 	}
 	return err
+}
+
+func (registry *S3Registry) GetBucketKeyForStream(stream *Stream) string {
+	return registry.KeyPrefix + generateKey(stream)
 }

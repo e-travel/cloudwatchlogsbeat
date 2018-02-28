@@ -10,6 +10,8 @@ cloudwatchlogsbeat:
   # === GENERAL SETTINGS ===
   # the bucket in which log streams save their state
   s3_bucket_name: the-bucket-name
+  # s3 key prefix (default: "")
+  s3_key_prefix: prefix/
   # Defines how often the manager will refresh its list of monitored log groups
   # AWS API call: DescribeLogGroups
   group_refresh_frequency: 10s

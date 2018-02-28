@@ -56,6 +56,7 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 		registry = &cwl.S3Registry{
 			S3Client:   sess.S3Client(),
 			BucketName: config.S3BucketName,
+			KeyPrefix:  config.S3KeyPrefix,
 		}
 	}
 

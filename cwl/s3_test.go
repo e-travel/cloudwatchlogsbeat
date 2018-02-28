@@ -117,3 +117,19 @@ func Test_S3_WriteStreamInfo_ShouldReturnError_OnError(t *testing.T) {
 	err := registry.WriteStreamInfo(stream)
 	assert.Equal(t, "S3 Error", err.Error())
 }
+
+func Test_S3_GetBucketKeyForStream(t *testing.T) {
+	testCases := []struct {
+		prefix string
+		result string
+	}{
+		{"", "group/stream"},
+		{"prefix/", "prefix/group/stream"},
+		{"whatever", "whatevergroup/stream"},
+	}
+
+	for _, testCase := range testCases {
+		registry := &S3Registry{KeyPrefix: testCase.prefix}
+		assert.Equal(t, testCase.result, registry.GetBucketKeyForStream(stream))
+	}
+}
