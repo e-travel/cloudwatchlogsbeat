@@ -4,15 +4,12 @@ Card](https://goreportcard.com/badge/github.com/e-travel/cloudwatchlogsbeat)](ht
 
 # Cloudwatchlogsbeat
 
-Cloudwatchlogsbeat is a [beat](https://www.elastic.co/products/beats) for
-the [elastic stack](https://www.elastic.co/products). Its purpose is
-to harvest data from AWS Cloudwatch Log Groups and ship them to a
-variety of sinks that include logstash, elasticsearch etc.
-
-**Disclaimer**: the beat is production-tested and is currently being
-used to harvest thousands of stream events per minute. However, please
-keep in mind that there may be bugs and that we accept no
-responsibility for any kind of damage that may occur as a result.
+Cloudwatchlogsbeat is a [beat](https://www.elastic.co/products/beats)
+for the [elastic stack](https://www.elastic.co/products). Its purpose
+is to harvest data from AWS Cloudwatch Log Groups and ship them to a
+variety of sinks that include logstash, elasticsearch etc. The beat is
+production-tested and is currently being used to harvest some
+thousands of stream events per minute.
 
 # Description
 
