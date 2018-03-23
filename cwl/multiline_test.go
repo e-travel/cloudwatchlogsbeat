@@ -48,7 +48,7 @@ func Test_Multiline_MatchBefore_NegateTrue(t *testing.T) {
 		func(args mock.Arguments) {
 			event := args.Get(0).(*Event)
 			expectedMessage := createExpectedMessage(events)
-			assert.Equal(t, expectedMessage, event.Message)
+			assert.Equal(t, expectedMessage, (*event)["message"])
 		})
 
 	params := &Params{
@@ -103,7 +103,7 @@ func Test_Multiline_MatchAfter_NegateTrue(t *testing.T) {
 		func(args mock.Arguments) {
 			event := args.Get(0).(*Event)
 			expectedMessage := createExpectedMessage(events)
-			assert.Equal(t, expectedMessage, event.Message)
+			assert.Equal(t, expectedMessage, (*event)["message"])
 		})
 
 	params := &Params{
@@ -156,7 +156,7 @@ func Test_Multiline_MatchBefore_NegateFalse(t *testing.T) {
 		func(args mock.Arguments) {
 			event := args.Get(0).(*Event)
 			expectedMessage := createExpectedMessage(events)
-			assert.Equal(t, expectedMessage, event.Message)
+			assert.Equal(t, expectedMessage, (*event)["message"])
 		})
 
 	params := &Params{
@@ -211,7 +211,7 @@ func Test_Multiline_MatchAfter_NegateFalse(t *testing.T) {
 		func(args mock.Arguments) {
 			event := args.Get(0).(*Event)
 			expectedMessage := createExpectedMessage(events)
-			assert.Equal(t, expectedMessage, event.Message)
+			assert.Equal(t, expectedMessage, (*event)["message"])
 		})
 
 	params := &Params{

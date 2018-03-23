@@ -54,6 +54,8 @@ cloudwatchlogsbeat:
         pattern: "^REPORT RequestId.+"
         negate: true
         match: before
+      # Add structure to VPC flow logs
+      vpc_flow_log: false
 
 #================================ General ======================================
 

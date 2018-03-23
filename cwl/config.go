@@ -17,6 +17,7 @@ type Prospector struct {
 	Id         string     `config:"id"`
 	GroupNames []string   `config:"groupnames"`
 	Multiline  *Multiline `config:"multiline"`
+	VPCFlowLog bool       `config:"vpc_flow_log"`
 }
 
 type Config struct {

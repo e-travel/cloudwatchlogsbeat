@@ -2,10 +2,14 @@ package cwl
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
 
+	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -151,36 +155,123 @@ func (stream *Stream) FullName() string {
 
 // fills the buffer's contents into the event,
 // publishes the message and empties the buffer
-func (stream *Stream) publish(event *Event) {
+func (stream *Stream) publishMessage(timestamp int64) {
 	if stream.buffer.Len() == 0 {
 		return
 	}
-	event.Message = stream.buffer.String()
+	event := &Event{
+		"@timestamp": common.Time(ToTime(timestamp)),
+		"prospector": stream.Group.Prospector.Id,
+		"type":       stream.Group.Prospector.Id,
+		"message":    stream.buffer.String(),
+		"group":      stream.Group.Name,
+		"stream":     stream.Name,
+	}
 	stream.Params.Publisher.Publish(event)
 	stream.buffer.Reset()
 	stream.publishedEvents++
 }
 
 func (stream *Stream) digest(streamEvent *cloudwatchlogs.OutputLogEvent) {
-	event := &Event{
-		Stream:    stream,
-		Timestamp: aws.Int64Value(streamEvent.Timestamp),
+	if stream.Group.Prospector.VPCFlowLog {
+		stream.publishVPCFlowLog(*streamEvent.Timestamp, *streamEvent.Message)
+		return
 	}
 	if stream.multiline == nil {
 		stream.buffer.WriteString(*streamEvent.Message)
-		stream.publish(event)
+		stream.publishMessage(*streamEvent.Timestamp)
 	} else {
 		switch stream.multiline.Match {
 		case "after":
 			if stream.multiRegex.MatchString(*streamEvent.Message) == stream.multiline.Negate {
-				stream.publish(event)
+				stream.publishMessage(*streamEvent.Timestamp)
 			}
 			stream.buffer.WriteString(*streamEvent.Message)
 		case "before":
 			stream.buffer.WriteString(*streamEvent.Message)
 			if stream.multiRegex.MatchString(*streamEvent.Message) == stream.multiline.Negate {
-				stream.publish(event)
+				stream.publishMessage(*streamEvent.Timestamp)
 			}
 		}
 	}
+}
+
+// parse parses VPC flow logs.
+func parseFlowLogRecord(msg string) (*Event, error) {
+	// https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/flow-logs.html
+	p := strings.Split(msg, " ")
+	if len(p) != 14 {
+		return nil, errors.New("Invalid VPC flow log record")
+	}
+	version, err := strconv.ParseUint(p[0], 10, 8)
+	if err != nil {
+		return nil, errors.New("Invalid version")
+	}
+	accountId, err := strconv.ParseUint(p[1], 10, 64)
+	if err != nil {
+		return nil, errors.New("Invalid account ID")
+	}
+	srcPort, err := strconv.ParseUint(p[5], 10, 16)
+	if err != nil {
+		return nil, errors.New("Invalid source port")
+	}
+	dstPort, err := strconv.ParseUint(p[6], 10, 16)
+	if err != nil {
+		return nil, errors.New("Invalid destination port")
+	}
+	protocol, err := strconv.ParseUint(p[7], 10, 8)
+	if err != nil {
+		return nil, errors.New("Invalid protocol")
+	}
+	packets, err := strconv.ParseUint(p[8], 10, 64)
+	if err != nil {
+		return nil, errors.New("Invalid packet count")
+	}
+	bytes, err := strconv.ParseUint(p[9], 10, 64)
+	if err != nil {
+		return nil, errors.New("Invalid byte count")
+	}
+	start, err := strconv.ParseInt(p[10], 10, 64)
+	if err != nil {
+		return nil, errors.New("Invalid start time")
+	}
+	end, err := strconv.ParseInt(p[11], 10, 64)
+	if err != nil {
+		return nil, errors.New("Invalid end time")
+	}
+	return &Event{
+		"version":     uint8(version),
+		"accountId":   accountId,
+		"interfaceId": p[2],
+		"srcAddr":     p[3],
+		"dstAddr":     p[4],
+		"srcPort":     uint16(srcPort),
+		"dstPort":     uint16(dstPort),
+		"protocol":    uint8(protocol),
+		"packets":     packets,
+		"bytes":       bytes,
+		"start":       time.Unix(start, 0),
+		"end":         time.Unix(end, 0),
+		"action":      p[12],
+		"logStatus":   p[13],
+	}, nil
+}
+
+// fills the buffer's contents into the event,
+// publishes the message and empties the buffer
+func (stream *Stream) publishVPCFlowLog(timestamp int64, msg string) {
+	eventPtr, err := parseFlowLogRecord(msg)
+	if err != nil {
+		logp.Debug("publishVPCFlowLog: %s", err.Error())
+		return
+	}
+	event := *eventPtr
+	event["@timestamp"] = common.Time(ToTime(timestamp))
+	event["prospector"] = stream.Group.Prospector.Id
+	event["type"] = stream.Group.Prospector.Id
+	event["message"] = stream.buffer.String()
+	event["group"] = stream.Group.Name
+	event["stream"] = stream.Name
+	stream.Params.Publisher.Publish(&event)
+	stream.publishedEvents++
 }
