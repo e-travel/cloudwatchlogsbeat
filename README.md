@@ -102,6 +102,15 @@ generated `coverage.out` file can be then viewed using:
 
     $ go tool cover -html=coverage.out
 
+# Docker
+
+Here are steps to build and push a Docker version
+
+```bash
+docker build -t e-travel/cloudwatchlogsbeat .
+docker push e-travel/cloudwatchlogsbeat
+```
+
 # Contributing
 
 Bug reports and pull requests are welcome on GitHub at
