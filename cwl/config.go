@@ -20,12 +20,13 @@ type Prospector struct {
 }
 
 type Config struct {
-	S3BucketName           string        `config:"s3_bucket_name"`
-	S3KeyPrefix            string        `config:"s3_key_prefix"`
-	GroupRefreshFrequency  time.Duration `config:"group_refresh_frequency"`
-	StreamRefreshFrequency time.Duration `config:"stream_refresh_frequency"`
-	ReportFrequency        time.Duration `config:"report_frequency"`
-	AWSRegion              string        `config:"aws_region"`
+	S3BucketName             string        `config:"s3_bucket_name"`
+	S3KeyPrefix              string        `config:"s3_key_prefix"`
+	GroupRefreshFrequency    time.Duration `config:"group_refresh_frequency"`
+	StreamRefreshFrequency   time.Duration `config:"stream_refresh_frequency"`
+	ReportFrequency          time.Duration `config:"report_frequency"`
+	AWSRegion                string        `config:"aws_region"`
+	EnableDynamicJSONParsing bool          `config:"enable_dynamic_json_parsing"`
 
 	HotStreamEventHorizon          time.Duration `config:"hot_stream_event_horizon"`
 	HotStreamEventRefreshFrequency time.Duration `config:"hot_stream_event_refresh_frequency"`

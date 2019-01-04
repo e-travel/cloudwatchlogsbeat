@@ -22,6 +22,8 @@ cloudwatchlogsbeat:
   report_frequency: 5m
   # defines AWS region (default: eu-west-1)
   aws_region: eu-west-1
+  # enable dynamic JSON deserialization
+  enable_dynamic_json_parsing: false
 
   # === HOT STREAMS ===
   # hot streams are streams whose last event is earlier than this value

@@ -22,10 +22,6 @@ type Publisher struct {
 }
 
 func (publisher Publisher) Publish(event *Event) {
-	a, err := mapstringer(event.Message)
-	if err != nil {
-		logp.Debug("", "Failed mapstringer: %s", err)
-	}
 
 	b := common.MapStr{
 		"@timestamp": common.Time(ToTime(event.Timestamp)),
@@ -36,13 +32,17 @@ func (publisher Publisher) Publish(event *Event) {
 		"stream":     event.Stream.Name,
 	}
 
-	if a == nil {
-		publisher.Client.PublishEvent(b)
-		return
+	if event.Stream.Params.Config.EnableDynamicJSONParsing {
+		a, err := mapstringer(event.Message)
+		if err != nil {
+			logp.Debug("", "Failed mapstringer: %s", err)
+		} else {
+			a.Update(b)
+			publisher.Client.PublishEvent(a)
+			return
+		}
 	}
-
-	a.Update(b)
-	publisher.Client.PublishEvent(a)
+	publisher.Client.PublishEvent(b)
 }
 
 func (publisher Publisher) Close() {
