@@ -1,23 +1,21 @@
-FROM golang:1.11-stretch AS builder
+FROM golang:1.11-alpine AS builder
 
 WORKDIR /go/src/github.com/e-travel/cloudwatchlogsbeat
 COPY . .
 ENV CGO_ENABLED=0
-RUN apt-get -y -qq update && \
-    apt-get -y -qq install ca-certificates && \
+RUN apk update && \
+    apk add ca-certificates && \
     GOOS=linux GOARCH=amd64 go build -i -o cloudwatchlogsbeat
 
 
-FROM debian:stretch
+FROM scratch
 
-ARG DEBIAN_FRONTEND="noninteractive"
 ARG BEAT_HOME="/usr/share/cloudwatchlogsbeat"
 
 ENV PATH="${BEAT_HOME}:${PATH}"
 
-RUN apt-get -y -qq update && apt-get -y -qq install ca-certificates
 COPY --from=builder /go/src/github.com/e-travel/cloudwatchlogsbeat/cloudwatchlogsbeat "${BEAT_HOME}/cloudwatchlogsbeat"
-
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 WORKDIR "${BEAT_HOME}"
 
-CMD ["/usr/bin/cloudwatchlogsbeat"]
+CMD ["cloudwatchlogsbeat"]
