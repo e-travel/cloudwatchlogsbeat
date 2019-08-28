@@ -1,5 +1,6 @@
 /cloudwatchlogsbeat
 /data
 /logs
+/vendor
 
 *.out
