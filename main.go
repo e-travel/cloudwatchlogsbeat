@@ -4,11 +4,15 @@ import (
 	"os"
 
 	"github.com/e-travel/cloudwatchlogsbeat/beater"
-
-	"github.com/elastic/beats/libbeat/cmd"
+	cmd "github.com/elastic/beats/libbeat/cmd"
+	"github.com/elastic/beats/libbeat/cmd/instance"
 )
 
-var RootCmd = cmd.GenRootCmd("cloudwatchlogsbeat", "", beater.New)
+// Name of this beat
+var Name = "cloudwatchlogsbeat"
+
+// RootCmd to handle beats cli
+var RootCmd = cmd.GenRootCmdWithSettings(beater.New, instance.Settings{Name: Name})
 
 func main() {
 
