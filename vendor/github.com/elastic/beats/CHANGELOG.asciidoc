@@ -8,7 +8,7 @@
 // Template, add newest changes here
 
 === Beats version HEAD
-https://github.com/elastic/beats/compare/v5.4.1...master[Check the HEAD diff]
+https://github.com/elastic/beats/compare/v5.6.16...5.6[Check the HEAD diff]
 
 ==== Breaking changes
 
@@ -33,18 +33,13 @@ https://github.com/elastic/beats/compare/v5.4.1...master[Check the HEAD diff]
 *Heartbeat*
 
 *Metricbeat*
-- Fix a debug statement that said a module wrapper had stopped when it hadn't. {pull}4264[4264]
-- Use MemAvailable value from /proc/meminfo on Linux 3.14. {pull}4316[4316]
-- Fix panic when events were dropped by filters. {issue}4327[4327]
-- Add filtering to system filesystem metricset to remove relative mountpoints like those
-  from Linux network namespaces. {pull}4370[4370]
 
 *Packetbeat*
 
-- Clean configured geoip.paths before attempting to open the database. {pull}4306[4306]
-
 *Winlogbeat*
 
+- Prevent Winlogbeat from dropping events with invalid XML. {pull}11006{11006}
+- Fix Winlogbeat escaping CR, LF and TAB characters. {issue}11328[11328] {pull}11357[11357]
 
 ==== Added
 
@@ -89,6 +84,296 @@ https://github.com/elastic/beats/compare/v5.4.1...master[Check the HEAD diff]
 *Winlogbeat*
 
 ////////////////////////////////////////////////////////////
+
+[[release-notes-5.6.16]]
+=== Beats version 5.6.16
+https://github.com/elastic/beats/compare/v5.6.15...v5.6.16[View commits]
+
+*Winlogbeat*
+
+- Prevent Winlogbeat from dropping events with invalid XML. {pull}11006[11006]
+
+[[release-notes-5.6.15]]
+=== Beats version 5.6.15
+https://github.com/elastic/beats/compare/v5.6.14...v5.6.15[View commits]
+
+No changes in this version.
+
+
+[[release-notes-5.6.14]]
+=== Beats version 5.6.14
+https://github.com/elastic/beats/compare/v5.6.13...v5.6.14[View commits]
+
+No changes in this version.
+
+[[release-notes-5.6.13]]
+=== Beats version 5.6.13
+https://github.com/elastic/beats/compare/v5.6.12...v5.6.13[View commits]
+
+No changes in this version.
+
+[[release-notes-5.6.12]]
+=== Beats version 5.6.12
+https://github.com/elastic/beats/compare/v5.6.11...v5.6.12[View commits]
+
+No changes in this version.
+
+[[release-notes-5.6.11]]
+=== Beats version 5.6.11
+https://github.com/elastic/beats/compare/v5.6.10...v5.6.11[View commits]
+
+No changes in this version.
+
+[[release-notes-5.6.10]]
+=== Beats version 5.6.10
+https://github.com/elastic/beats/compare/v5.6.9...v5.6.10[View commits]
+
+==== Bugfixes
+
+*Packetbeat*
+
+- Fix an out of bounds access in HTTP parser caused by malformed request. {pull}6997[6997]
+
+[[release-notes-5.6.9]]
+=== Beats version 5.6.9
+https://github.com/elastic/beats/compare/v5.6.8...v5.6.9[View commits]
+
+==== Bugfixes
+
+*Affecting all Beats*
+
+- Fix a type issue when specifying certicate authority when using the `import_dashboards` command. {pull}6678[6678]
+
+*Packetbeat*
+
+- Fix http status phrase parsing not allow spaces. {pull}5312[5312]
+- Fix http parse to allow to parse get request with space in the URI. {pull}5495[5495]
+- Fix mysql SQL parser to trim `\r` from Windows Server `SELECT\r\n\t1`. {pull}5572[5572]
+- Fix corruption when parsing repeated headers in an HTTP request or response. {pull}6325[6325]
+- Fix panic when parsing partial AMQP messages. {pull}6384[6384]
+- Fix out of bounds access to slice in MongoDB parser. {pull}6256[6256]
+- Fix sniffer hanging on exit under Linux. {pull}6535[6535]
+- Fix bounds check error in http parser causing a panic. {pull}6750[6750]
+- HTTP parses successfully on empty status phrase. {issue}6176[6176]
+- HTTP parser supports broken status line. {pull}6631[6631]
+
+
+[[release-notes-5.6.8]]
+=== Beats version 5.6.8
+https://github.com/elastic/beats/compare/v5.6.7...v5.6.8[View commits]
+
+==== Bugfixes
+
+*Winlogbeat*
+
+- Fixed a crash under Windows 2003 and XP when an event had less insert strings than required by its format string. {pull}6247[6247]
+
+
+[[release-notes-5.6.7]]
+=== Beats version 5.6.7
+https://github.com/elastic/beats/compare/v5.6.6...v5.6.7[View commits]
+
+No changes in this release.
+
+
+[[release-notes-5.6.6]]
+=== Beats version 5.6.6
+https://github.com/elastic/beats/compare/v5.6.5...v5.6.6[View commits]
+
+No changes in this release.
+
+
+[[release-notes-5.6.5]]
+=== Beats version 5.6.5
+https://github.com/elastic/beats/compare/v5.6.4...v5.6.5[View commits]
+
+==== Bugfixes
+
+*Affecting all Beats*
+
+- Fix duplicate batches of events in retry queue. {pull}5520[5520]
+
+*Metricbeat*
+
+- Clarify meaning of percentages reported by system core metricset. {pull}5565[5565]
+- Fix map overwrite in docker diskio module. {issue}5582[5582]
+
+[[release-notes-5.6.4]]
+=== Beats version 5.6.4
+https://github.com/elastic/beats/compare/v5.6.3...v5.6.4[View commits]
+
+==== Bugfixes
+
+*Affecting all Beats*
+
+- Fix race condition in internal logging rotator. {pull}4519[4519]
+
+*Packetbeat*
+
+- Fix missing length check in the PostgreSQL module. {pull}5457[5457]
+
+==== Added
+
+*Affecting all Beats*
+
+- Add support for enabling TLS renegotiation. {issue}4386[4386]
+- Add setting to enable/disable the slow start in logstash output. {pull}5400[5400]
+
+[[release-notes-5.6.3]]
+=== Beats version 5.6.3
+https://github.com/elastic/beats/compare/v5.6.2...v5.6.3[View commits]
+
+No changes in this release.
+
+[[release-notes-5.6.2]]
+=== Beats version 5.6.2
+https://github.com/elastic/beats/compare/v5.6.1...v5.6.2[View commits]
+
+No changes in this release.
+
+[[release-notes-5.6.1]]
+=== Beats version 5.6.1
+https://github.com/elastic/beats/compare/v5.6.0...v5.6.1[View commits]
+
+No changes in this release.
+
+[[release-notes-5.6.0]]
+=== Beats version 5.6.0
+https://github.com/elastic/beats/compare/v5.5.3...v5.6.0[View commits]
+
+==== Breaking changes
+
+*Affecting all Beats*
+
+- The _all.norms setting in the Elasticsearch template is no longer disabled.
+  This increases the storage size with one byte per document, but allows for a
+  better upgrade experience to 6.0. {issue}4901[4901]
+
+
+==== Bugfixes
+
+*Filebeat*
+
+- Fix issue where the `fileset.module` could have the wrong value. {issue}4761[4761]
+
+*Packetbeat*
+
+- Update flow timestamp on each packet being received. {issue}4895[4895]
+
+*Metricbeat*
+
+- Fix a debug statement that said a module wrapper had stopped when it hadn't. {pull}4264[4264]
+- Use MemAvailable value from /proc/meminfo on Linux 3.14. {pull}4316[4316]
+- Fix panic when events were dropped by filters. {issue}4327[4327]
+
+==== Added
+
+*Affecting all Beats*
+
+- Add option to the import_dashboards script to load the dashboards via Kibana API. {pull}4682[4682]
+- Add `logging.files` `permissions` option. {pull}4295[4295]
+
+*Filebeat*
+
+- Add support for loading Xpack Machine Learning configurations from the modules, and added sample configurations for the Nginx module. {pull}4506[4506] {pull}4609[4609]
+-  Add ability to parse nginx logs exposing the X-Forwarded-For header instead of the remote address. {pull}4351[4351]
+
+*Metricbeat*
+
+- Add `filesystem.ignore_types` to system module for ignoring filesystem types. {issue}4685[4685]
+
+==== Deprecated
+
+*Affecting all Beats*
+
+- Loading more than one output is deprecated and will be removed in 6.0. {pull}4907[4907]
+
+[[release-notes-5.5.3]]
+=== Beats version 5.5.3
+https://github.com/elastic/beats/compare/v5.5.2...v5.5.3[View commits]
+
+No changes in this release.
+
+[[release-notes-5.5.2]]
+=== Beats version 5.5.2
+https://github.com/elastic/beats/compare/v5.5.1...v5.5.2[View commits]
+
+No changes in this release.
+
+[[release-notes-5.5.1]]
+=== Beats version 5.5.1
+https://github.com/elastic/beats/compare/v5.5.0...v5.5.1[View commits]
+
+==== Bugfixes
+
+*Affecting all Beats*
+
+- Normalize all times to UTC to ensure proper index naming. {issue}4569[4569]
+
+[[release-notes-5.5.0]]
+=== Beats version 5.5.0
+https://github.com/elastic/beats/compare/v5.4.2...v5.5.0[View commits]
+
+==== Breaking changes
+
+*Affecting all Beats*
+
+- Usage of field `_type` is now ignored and hardcoded to `doc`. {pull}3757[3757]
+
+*Metricbeat*
+- Change all `system.cpu.*.pct` metrics to be scaled by the number of CPU cores.
+  This will make the CPU usage percentages from the system cpu metricset consistent
+  with the system process metricset. The documentation for these metrics already
+  stated that on multi-core systems the percentages could be greater than 100%. {pull}4544[4544]
+
+==== Bugfixes
+
+*Affecting all Beats*
+
+- Fix console output. {pull}4045[4045]
+
+*Filebeat*
+
+- Allow string characters in user agent patch version (NGINX and Apache) {pull}4415[4415]
+
+*Metricbeat*
+
+- Fix type of field `haproxy.stat.check.health.last`. {issue}4407[4407]
+
+*Packetbeat*
+
+- Fix `packetbeat.interface` options that contain underscores (e.g. `with_vlans` or `bpf_filter`). {pull}4378[4378]
+- Enabled /proc/net/tcp6 scanning and fixed ip v6 parsing. {pull}4442[4442]
+
+==== Deprecated
+
+*Filebeat*
+
+- Deprecate `document_type` prospector config option as _type is removed in elasticsearch 6.0. Use fields instead. {pull}4225[4225]
+
+*Winlogbeat*
+
+- Deprecated metrics endpoint. It is superseded by a libbeat feature that can serve metrics on an HTTP endpoint. {pull}4145[4145]
+
+[[release-notes-5.4.2]]
+=== Beats version 5.4.2
+https://github.com/elastic/beats/compare/v5.4.1...v5.4.2[View commits]
+
+==== Bugfixes
+
+*Affecting all Beats*
+
+- Removed empty sections from the template files, causing indexing errors for array objects. {pull}4488[4488]
+
+*Metricbeat*
+
+- Fix issue affecting Windows services timing out at startup. {pull}4491[4491]
+- Add filtering to system filesystem metricset to remove relative mountpoints like those
+  from Linux network namespaces. {pull}4370[4370]
+
+*Packetbeat*
+
+- Clean configured geoip.paths before attempting to open the database. {pull}4306[4306]
 
 [[release-notes-5.4.1]]
 === Beats version 5.4.1
@@ -232,6 +517,12 @@ https://github.com/elastic/beats/compare/v5.2.2...v5.3.0[View commits]
 
 - Add error handling to system process metricset for when Linux cgroups are missing from the kernel. {pull}3692[3692]
 - Add labels to the Docker healthcheck metricset output. {pull}3707[3707]
+- Make system process metricset honor the cpu_ticks config option. {issue}3590[3590]
+- Support common.Time in mapstriface.toTime() {pull}3812[3812]
+- Fixing panic on prometheus collector when label has , {pull}3947[3947]
+- Fix MongoDB dbstats fields mapping. {pull}4025[4025]
+
+*Packetbeat*
 
 *Winlogbeat*
 

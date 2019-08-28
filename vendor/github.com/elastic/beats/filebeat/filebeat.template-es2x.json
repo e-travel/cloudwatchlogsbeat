@@ -7,7 +7,7 @@
         }
       },
       "_meta": {
-        "version": "5.4.2"
+        "version": "5.6.17"
       },
       "date_detection": false,
       "dynamic_templates": [
@@ -46,6 +46,11 @@
                 },
                 "geoip": {
                   "properties": {
+                    "city_name": {
+                      "ignore_above": 1024,
+                      "index": "not_analyzed",
+                      "type": "string"
+                    },
                     "continent_name": {
                       "ignore_above": 1024,
                       "index": "not_analyzed",
@@ -58,6 +63,11 @@
                     },
                     "location": {
                       "type": "geo_point"
+                    },
+                    "region_name": {
+                      "ignore_above": 1024,
+                      "index": "not_analyzed",
+                      "type": "string"
                     }
                   }
                 },
@@ -124,7 +134,9 @@
                       "type": "string"
                     },
                     "patch": {
-                      "type": "long"
+                      "ignore_above": 1024,
+                      "index": "not_analyzed",
+                      "type": "string"
                     }
                   }
                 },
@@ -291,9 +303,6 @@
           "index": "not_analyzed",
           "type": "string"
         },
-        "fields": {
-          "properties": {}
-        },
         "fileset": {
           "properties": {
             "module": {
@@ -456,6 +465,11 @@
                 },
                 "geoip": {
                   "properties": {
+                    "city_name": {
+                      "ignore_above": 1024,
+                      "index": "not_analyzed",
+                      "type": "string"
+                    },
                     "continent_name": {
                       "ignore_above": 1024,
                       "index": "not_analyzed",
@@ -468,6 +482,11 @@
                     },
                     "location": {
                       "type": "geo_point"
+                    },
+                    "region_name": {
+                      "ignore_above": 1024,
+                      "index": "not_analyzed",
+                      "type": "string"
                     }
                   }
                 },
@@ -534,7 +553,9 @@
                       "type": "string"
                     },
                     "patch": {
-                      "type": "long"
+                      "ignore_above": 1024,
+                      "index": "not_analyzed",
+                      "type": "string"
                     }
                   }
                 },

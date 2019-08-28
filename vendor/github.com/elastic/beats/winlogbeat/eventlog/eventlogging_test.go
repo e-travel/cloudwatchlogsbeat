@@ -271,7 +271,7 @@ func TestFormatMessageWithLargeMessage(t *testing.T) {
 	assert.Len(t, records, 1)
 	for _, record := range records {
 		t.Log(record)
-		assert.Equal(t, "The data area passed to a system call is too small.", record.RenderErr)
+		assert.Equal(t, []string{"The data area passed to a system call is too small."}, record.RenderErr)
 	}
 }
 
@@ -559,6 +559,61 @@ func TestReadWhileCleared(t *testing.T) {
 	if len(lr) > 0 {
 		assert.Equal(t, uint32(3), lr[0].EventIdentifier.ID)
 	}
+}
+
+// Test event messages that include less parameters than required for message
+// formating (caused a crash in previous versions)
+func TestReadMissingParameters(t *testing.T) {
+	configureLogp()
+	log, err := initLog(providerName, sourceName, servicesMsgFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		err := uninstallLog(providerName, sourceName, log)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	var eventID uint32 = 1073748860
+	// Missing parameters will be substituted by "(null)"
+	template := "The %s service entered the (null) state."
+	msgs := []string{"Windows Update"}
+	err = log.Report(elog.Info, eventID, msgs)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Read messages:
+	eventlog, err := newEventLogging(map[string]interface{}{"name": providerName})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = eventlog.Open(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		err := eventlog.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	records, err := eventlog.Read()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify the message contents:
+	assert.Len(t, records, 1)
+	if len(records) != 1 {
+		t.FailNow()
+	}
+	assert.Equal(t, eventID&0xFFFF, records[0].EventIdentifier.ID)
+	assert.Equal(t, fmt.Sprintf(template, msgs[0]),
+		strings.TrimRight(records[0].Message, "\r\n"))
 }
 
 // TODO: Add more test cases:

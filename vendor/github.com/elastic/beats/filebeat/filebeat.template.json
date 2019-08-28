@@ -1,11 +1,8 @@
 {
   "mappings": {
     "_default_": {
-      "_all": {
-        "norms": false
-      },
       "_meta": {
-        "version": "5.4.2"
+        "version": "5.6.17"
       },
       "date_detection": false,
       "dynamic_templates": [
@@ -40,6 +37,10 @@
                 },
                 "geoip": {
                   "properties": {
+                    "city_name": {
+                      "ignore_above": 1024,
+                      "type": "keyword"
+                    },
                     "continent_name": {
                       "ignore_above": 1024,
                       "type": "keyword"
@@ -50,6 +51,10 @@
                     },
                     "location": {
                       "type": "geo_point"
+                    },
+                    "region_name": {
+                      "ignore_above": 1024,
+                      "type": "keyword"
                     }
                   }
                 },
@@ -107,7 +112,8 @@
                       "type": "keyword"
                     },
                     "patch": {
-                      "type": "long"
+                      "ignore_above": 1024,
+                      "type": "keyword"
                     }
                   }
                 },
@@ -247,9 +253,6 @@
           "ignore_above": 1024,
           "type": "keyword"
         },
-        "fields": {
-          "properties": {}
-        },
         "fileset": {
           "properties": {
             "module": {
@@ -388,6 +391,10 @@
                 },
                 "geoip": {
                   "properties": {
+                    "city_name": {
+                      "ignore_above": 1024,
+                      "type": "keyword"
+                    },
                     "continent_name": {
                       "ignore_above": 1024,
                       "type": "keyword"
@@ -398,6 +405,10 @@
                     },
                     "location": {
                       "type": "geo_point"
+                    },
+                    "region_name": {
+                      "ignore_above": 1024,
+                      "type": "keyword"
                     }
                   }
                 },
@@ -455,7 +466,8 @@
                       "type": "keyword"
                     },
                     "patch": {
-                      "type": "long"
+                      "ignore_above": 1024,
+                      "type": "keyword"
                     }
                   }
                 },

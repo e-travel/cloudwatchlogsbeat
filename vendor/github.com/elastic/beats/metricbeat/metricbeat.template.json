@@ -1,11 +1,8 @@
 {
   "mappings": {
     "_default_": {
-      "_all": {
-        "norms": false
-      },
       "_meta": {
-        "version": "5.4.2"
+        "version": "5.6.17"
       },
       "date_detection": false,
       "dynamic_templates": [
@@ -766,9 +763,6 @@
                   "ignore_above": 1024,
                   "type": "keyword"
                 },
-                "labels": {
-                  "properties": {}
-                },
                 "name": {
                   "ignore_above": 1024,
                   "type": "keyword"
@@ -786,9 +780,6 @@
                 "status": {
                   "ignore_above": 1024,
                   "type": "keyword"
-                },
-                "tags": {
-                  "properties": {}
                 }
               }
             },
@@ -898,9 +889,6 @@
                     }
                   }
                 },
-                "labels": {
-                  "properties": {}
-                },
                 "size": {
                   "properties": {
                     "regular": {
@@ -910,9 +898,6 @@
                       "type": "long"
                     }
                   }
-                },
-                "tags": {
-                  "properties": {}
                 }
               }
             },
@@ -1026,9 +1011,6 @@
               }
             }
           }
-        },
-        "fields": {
-          "properties": {}
         },
         "haproxy": {
           "properties": {
@@ -1284,7 +1266,8 @@
                           "type": "long"
                         },
                         "last": {
-                          "type": "long"
+                          "ignore_above": 1024,
+                          "type": "keyword"
                         }
                       }
                     },
@@ -1657,9 +1640,6 @@
                     },
                     "insync_replica": {
                       "type": "boolean"
-                    },
-                    "isr": {
-                      "properties": {}
                     },
                     "leader": {
                       "type": "long"
@@ -3607,9 +3587,6 @@
                           "ignore_above": 1024,
                           "type": "keyword"
                         },
-                        "percpu": {
-                          "properties": {}
-                        },
                         "stats": {
                           "properties": {
                             "system": {
@@ -3898,9 +3875,6 @@
                       "type": "long"
                     }
                   }
-                },
-                "env": {
-                  "properties": {}
                 },
                 "fd": {
                   "properties": {

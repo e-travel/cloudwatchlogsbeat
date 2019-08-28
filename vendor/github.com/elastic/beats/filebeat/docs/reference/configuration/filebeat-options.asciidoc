@@ -14,7 +14,6 @@ filebeat.prospectors:
 - input_type: log
   paths:
     - /var/log/apache/httpd-*.log
-  document_type: apache
 
 - input_type: log
   paths:
@@ -297,6 +296,8 @@ The default setting is 10s.
 [[filebeat-document-type]]
 ===== document_type
 
+deprecated[5.5,Use `fields` instead]
+
 The event type to use for published lines read by harvesters. For Elasticsearch
 output, the value that you specify here is used to set the `type` field in the output
 document. The default value is `log`.
@@ -431,7 +432,7 @@ Because this option may lead to data loss, it is disabled by default.
 
 ===== backoff
 
-The backoff options specify how aggressively Filebeat crawls new files for updates.
+The backoff options specify how aggressively Filebeat crawls open files for updates.
 You can use the default values in most cases.
 
 The `backoff` option defines how long Filebeat

@@ -1,5 +1,5 @@
-hash: 8537c53b0ffd3863e1d5f3a629fab5198d0fccd0dc4e6c9b992f15095a18c0e2
-updated: 2017-07-27T17:54:23.340107083+03:00
+hash: 0c016b3a99833b3c7ef874e0d5b5fa4e6a30a217e80c3bcb4e3578b5222d201c
+updated: 2019-08-28T11:15:33.799569+03:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 512bdaf8bec30abd545b440447cebb57b53d3af9
@@ -47,7 +47,7 @@ imports:
 - name: github.com/eapache/queue
   version: ded5959c0d4e360646dc9e9908cff48666781367
 - name: github.com/elastic/beats
-  version: 31a054703eeff7e14a090893d05a4562f7cd60fd
+  version: 3129969be02bd4b82ebdc72451739ca7fd28b002
   subpackages:
   - libbeat/beat
   - libbeat/cfgfile
@@ -85,6 +85,7 @@ imports:
   - libbeat/processors/add_cloud_metadata
   - libbeat/publisher
   - libbeat/service
+  - libbeat/setup/kibana
   - metricbeat/schema
   - metricbeat/schema/mapstriface
 - name: github.com/elastic/go-lumber
@@ -110,11 +111,11 @@ imports:
   - internal
   - redis
 - name: github.com/go-ini/ini
-  version: afbc45e87f3ba324c532d12c71918ef52e0fb194
+  version: 8fe474341f7eedd6804eda75896c8f3e4b5dc36a
 - name: github.com/golang/snappy
   version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
 - name: github.com/jmespath/go-jmespath
-  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
+  version: c2b33e8439af944379acbdd9c3a5fe0bc44bd8a5
 - name: github.com/joeshaw/multierror
   version: 69b34d4ec901851247ae7e77d33909caf9df99ed
 - name: github.com/klauspost/compress
@@ -148,7 +149,7 @@ imports:
   version: f0996189c86dc27338468f2a9b10077c6d572b34
   repo: https://github.com/urso/sarama
 - name: github.com/stretchr/testify
-  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  version: 221dbe5ed46703ee255b1da0dec05086f5035f62
   subpackages:
   - assert
   - mock
@@ -173,3 +174,5 @@ testImports:
   version: 792786c7400a136282c1664665ae0a8db921c6c2
   subpackages:
   - difflib
+- name: github.com/stretchr/objx
+  version: 1a9d0bb9f541897e62256577b352fdbc1fb4fd94

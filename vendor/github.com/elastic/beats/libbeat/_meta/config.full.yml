@@ -200,6 +200,10 @@ output.elasticsearch:
   # Configure curve types for ECDHE based cipher suites
   #ssl.curve_types: []
 
+  # Configure what types of renegotiation are supported. Valid options are
+  # never, once, and freely. Default is never.
+  #ssl.renegotiation: never
+
 
 #----------------------------- Logstash output ---------------------------------
 #output.logstash:
@@ -221,6 +225,11 @@ output.elasticsearch:
   # Number of batches to be send asynchronously to logstash while processing
   # new batches.
   #pipelining: 0
+
+  # If enabled only a subset of events in a batch of events is transferred per
+  # transaction.  The number of events to be sent increases up to `bulk_max_size`
+  # if no error is encountered.
+  #slow_start: false
 
   # Optional index name. The default index name is set to name of the beat
   # in all lowercase.
@@ -263,6 +272,10 @@ output.elasticsearch:
 
   # Configure curve types for ECDHE based cipher suites
   #ssl.curve_types: []
+
+  # Configure what types of renegotiation are supported. Valid options are
+  # never, once, and freely. Default is never.
+  #ssl.renegotiation: never
 
 #------------------------------- Kafka output ----------------------------------
 #output.kafka:
@@ -399,6 +412,10 @@ output.elasticsearch:
   # Configure curve types for ECDHE based cipher suites
   #ssl.curve_types: []
 
+  # Configure what types of renegotiation are supported. Valid options are
+  # never, once, and freely. Default is never.
+  #ssl.renegotiation: never
+
 #------------------------------- Redis output ----------------------------------
 #output.redis:
   # Boolean flag to enable or disable the output module.
@@ -495,6 +512,10 @@ output.elasticsearch:
 
   # Configure curve types for ECDHE based cipher suites
   #ssl.curve_types: []
+
+  # Configure what types of renegotiation are supported. Valid options are
+  # never, once, and freely. Default is never.
+  #ssl.renegotiation: never
 
 
 #------------------------------- File output -----------------------------------
@@ -638,3 +659,6 @@ logging.files:
   # Number of rotated log files to keep. Oldest files will be deleted first.
   #keepfiles: 7
 
+  # The permissions mask to apply when rotating log files. The default value is 0600.
+  # Must be a valid Unix-style file permissions mask expressed in octal notation.
+  #permissions: 0600

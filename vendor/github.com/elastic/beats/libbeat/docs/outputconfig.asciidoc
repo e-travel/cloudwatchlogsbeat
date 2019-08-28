@@ -234,10 +234,10 @@ output.elasticsearch:
   pipelines:
     - pipeline: critical_pipeline
       when.equals:
-        type: "critical"
+        fields.type: "critical"
     - pipeline: normal_pipeline
       when.equals:
-        type: "normal"
+        fields.type: "normal"
 ------------------------------------------------------------------------------
 
 ===== template
@@ -579,6 +579,14 @@ Setting `bulk_max_size` to values less than or equal to 0 disables buffering in 
 Beats that publish single events (such as Packetbeat) send each event directly to
 Elasticsearch. Beats that publish data in batches (such as Filebeat) send events in batches based on the
 spooler size.
+
+===== `slow_start`
+
+If enabled only a subset of events in a batch of events is transferred per transaction.
+The number of events to be sent increases up to `bulk_max_size` if no error is encountered.
+On error the number of events per transaction is reduced again.
+
+The default is `false`.
 
 [[kafka-output]]
 === Kafka Output
@@ -1232,6 +1240,15 @@ The following elliptic curve types are available:
 * P-256
 * P-384
 * P-521
+
+===== renegotiation
+
+This configures what types of TLS renegotiation are supported. The valid options
+are `never`, `once`, and `freely`. The default value is never.
+
+* `never` - Disables renegotiation.
+* `once` - Allows a remote server to request renegotiation once per connection.
+* `freely` - Allows a remote server to repeatedly request renegotiation.
 
 [[configuration-output-codec]]
 === Output Codec
