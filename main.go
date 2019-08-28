@@ -5,12 +5,14 @@ import (
 
 	"github.com/e-travel/cloudwatchlogsbeat/beater"
 
-	"github.com/elastic/beats/libbeat/beat"
+	"github.com/elastic/beats/libbeat/cmd"
 )
 
+var RootCmd = cmd.GenRootCmd("cloudwatchlogsbeat", "", beater.New)
+
 func main() {
-	err := beat.Run("cloudwatchlogsbeat", "", beater.New)
-	if err != nil {
+
+	if err := RootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
