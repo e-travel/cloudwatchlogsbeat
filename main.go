@@ -4,13 +4,19 @@ import (
 	"os"
 
 	"github.com/e-travel/cloudwatchlogsbeat/beater"
-
-	"github.com/elastic/beats/libbeat/beat"
+	cmd "github.com/elastic/beats/libbeat/cmd"
+	"github.com/elastic/beats/libbeat/cmd/instance"
 )
 
+// Name of this beat
+var Name = "cloudwatchlogsbeat"
+
+// RootCmd to handle beats cli
+var RootCmd = cmd.GenRootCmdWithSettings(beater.New, instance.Settings{Name: Name})
+
 func main() {
-	err := beat.Run("cloudwatchlogsbeat", "", beater.New)
-	if err != nil {
+
+	if err := RootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }

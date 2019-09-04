@@ -14,7 +14,7 @@ thousands of stream events per minute.
 # Description
 
 Cloudwatchlogsbeat operates by monitoring a set of AWS Cloudwatch Log
-Groups specified in its [configuration](cloudwatchlogsbeat.full.yml),
+Groups specified in its [configuration](cloudwatchlogsbeat.yml),
 which also defines a set of configuration values that influence the
 beat's operational behaviour. In general, the log groups are
 periodically probed for new streams which are then polled for new

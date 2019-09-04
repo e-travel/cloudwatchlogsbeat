@@ -1,4 +1,4 @@
-package: eTravel/cloudwatchlogsbeat
+package: github.com/e-travel/cloudwatchlogsbeat
 import:
 - package: github.com/aws/aws-sdk-go
   version: 1.8.36
@@ -7,7 +7,7 @@ import:
   - aws/session
   - service/cloudwatchlogs
 - package: github.com/elastic/beats
-  version: "5.4"
+  version: "7"
   subpackages:
   - libbeat/beat
   - libbeat/common
