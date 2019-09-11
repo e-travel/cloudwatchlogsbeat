@@ -41,14 +41,16 @@ API requests.
 
 # Setup / Installation
 
-First of all, make sure that you have
-a [working go installation](https://golang.org/doc/install) (this
-includes a valid `$GOPATH`).
+First of all, make sure that you have a [working go
+installation](https://golang.org/doc/install) (this includes a valid
+`$GOPATH`). The [glide package manager](https://glide.sh) is also
+necessary for installing the beat's dependencies.
 
-The following steps are necessary for a working installation:
+The following steps will result in a working installation:
 
     $ go get -u github.com/e-travel/cloudwatchlogsbeat
     $ cd $GOPATH/src/github.com/e-travel/cloudwatchlogsbeat
+    $ glide install
     $ go build -i # builds the beat and builds/installs the dependencies
     $ ./cloudwatchlogsbeat -e -d '*'
 
