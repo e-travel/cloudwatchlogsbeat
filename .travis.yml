@@ -21,4 +21,4 @@ deploy:
   on:
     tags: true
     branch: master
-    go: 1.9
+    go: 1.12
