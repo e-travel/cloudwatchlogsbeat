@@ -1,13 +1,13 @@
 language: go
 go:
-  - 1.11
-  - 1.12
-  - master
+- 1.11
+- 1.12
+- master
 before_install:
-  - wget "https://github.com/Masterminds/glide/releases/download/v0.13.3/glide-v0.13.3-linux-amd64.tar.gz"
-  - mkdir -p $HOME/bin
-  - tar -vxz -C $HOME/bin --strip=1 -f glide-v0.13.3-linux-amd64.tar.gz
-  - export PATH="$HOME/bin:$PATH"
+- wget "https://github.com/Masterminds/glide/releases/download/v0.13.3/glide-v0.13.3-linux-amd64.tar.gz"
+- mkdir -p $HOME/bin
+- tar -vxz -C $HOME/bin --strip=1 -f glide-v0.13.3-linux-amd64.tar.gz
+- export PATH="$HOME/bin:$PATH"
 install: glide install
 script:
 - go build -v
@@ -15,10 +15,11 @@ script:
 deploy:
   provider: releases
   api_key:
-    secure: B2is4VWiVzGdqHB2jK/nOjtliatenYMgoubVG4X6hnhVCbJ2rUzWOuDbImHTIJ3BbSeEGv35iwe9LTsit9cfJ5wE4P/s4B5+Ce65FivZ6Nby/RuLNlQsKNjzCEquZTcqFgMYBBxUABjgRcNHpEkYT1ZZnfoS9JPxHk2qrvyVVlOcOlW+h4ujh/eafhZkoaOguglxcXcsqU+SXr9KlpY11SkZVpDB1Mxrsaxod2WcefPKN/oiBuB1DlYjy64wYSl0zh4xFwaVxgFUoMBxFq60iEFeH3PEu6eEh6PWWgFkbHmh9D5EoBivkFHrVMXcsIyz5ZeqP3VbzulUO9PPr54fQcZ1ghJQkXC9BQCiDlxCDjiahRkicwpUCIj2q0zJiiDQzhReJSWCjfCOdgVixo/ZRhAoQCE+u0j6KtbIM3A3ssaa+74q3Q1DWp1w2PlUbW7bzmt/hNnkZ/OIjaNzBGOLfFwTUbKQ30iQujp8u6jzbR62ZVtAL0dN4i2YYihKrlYX3dpZXUeaL3Pwpr55H7FMjCtR56VgLHE7nqRqLdYauONwlWHEp7Ig9T/4dnCMd+XyLDJPY7SREhTJhBGEYSgoRqr8C5BZ1q5Owq3NavObiacXOnd9/WsgyQpsOK6/vd8ANzJmDuP1DE6UFIq/2E1MGL3Y2rbsknQ+68xgmo2b5x0=
+    secure: ASmC94pFUzEH4EMxRvpGxP738F89jtljKPi1fr2+/IlApRK034EUbTK/YfPx6TSIVQ+JefAsGT7/2QSVB1jnWDMm8cEMN1VVzS5LjqgZbukQ3DLNBhD1BowI3MH9KaSchXNPUI0TlftOJ9xkkhbXAdC1kxVbrl73QkcyI2f6sl8C0qB36LvWJXLGhCdgYxY+ioiTuNh9mhWWy34hvLHPgoH+hMYmF+/G6IOK9l3YNLdKAamFGGkeNgHjpD4Kzq/qDo1nLJAhsCYDoOjaB3Q1pO3AmtDNuSivIMt+GGGEuUIUFUUfoizdA4jpc6HPpr2zuEydzAPSjVGYsdsllxX/JPfM2AYx0jgQx95HAnALnuQ3RWQ2HJFzJLJ1plzASsICNPak5+mEuO1oBA3MO5l9u9Sodv1RshXUVxkrdSglcqqIitg5kUFtTeSOdm8J1Mkgx/RTMikAQfwbHCo+Pd9vt/yvuOU9UC+zGfOySCKkctjtDz5b6K9vky9+AUiST18AT98V/13PN6i0ncrgjPGjTOFv09BRfnbgRUlaTaHLFd+46l1i38EBOxB0VMNWjMKBoY6JuAexxSiX3ETP6R1EFVR8YBkKLbuCcoqXHpNZsNHOme99xfsEMaZgsliTZC41vBR+voaAeuzub7McE79QNCBoQyMRJz6+0FMVhRTyHJA=
   file: cloudwatchlogsbeat
   skip_cleanup: true
   on:
     tags: true
     branch: master
     go: 1.12
+    repo: e-travel/cloudwatchlogsbeat
