@@ -41,6 +41,13 @@ API requests.
 
 # Setup / Installation
 
+## Binaries
+
+The latest beat release can be found
+[here](https://github.com/e-travel/cloudwatchlogsbeat/releases/latest).
+
+## Development
+
 First of all, make sure that you have a [working go
 installation](https://golang.org/doc/install) (this includes a valid
 `$GOPATH`). The [glide package manager](https://glide.sh) is also
@@ -90,6 +97,14 @@ s3:GetObject
 s3:ListBucket
 s3:HeadObject
 s3:PutObject
+```
+
+A common pitfall in S3 persmissions is that the target resources
+should include both the bucket and its contents as follows:
+
+```
+arn:aws:s3:::BUCKET_NAME
+arn:aws:s3:::BUCKET_NAME/*
 ```
 
 # Tests
