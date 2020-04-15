@@ -74,7 +74,6 @@ require (
 	gopkg.in/jcmturner/gokrb5.v7 v7.3.0 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
 	howett.net/plist v0.0.0-20200225050739-77e249a2e2ba // indirect
-	k8s.io/api v0.17.3 // indirect
-	k8s.io/client-go v11.0.0+incompatible // indirect
+	k8s.io/client-go v0.17.3 // indirect
 	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab // indirect
 )
