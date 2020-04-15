@@ -17,7 +17,7 @@ require (
 	github.com/docker/docker v1.4.2-0.20190828015737-7ce0e26c1615 // indirect
 	github.com/docker/go-connections v0.4.1-0.20190612165340-fd1b1942c4d5 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/dop251/goja v0.0.0-20200309191912-043cf4f34a48 // indirect
+	github.com/dop251/goja v0.0.0-20200414142002-77e84ffb8c65 // indirect
 	github.com/dop251/goja_nodejs v0.0.0-20200128125109-2d688c7e0ac4 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eapache/go-resiliency v1.2.1-0.20190716143035-b98ce2825f72 // indirect
@@ -77,3 +77,5 @@ require (
 	k8s.io/client-go v0.17.3 // indirect
 	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab // indirect
 )
+
+replace github.com/dop251/goja => github.com/andrewkroh/goja v0.0.0-20190128172624-dd2ac4456e20
