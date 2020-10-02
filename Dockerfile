@@ -1,12 +1,16 @@
 FROM golang:1.11-alpine AS builder
 
-WORKDIR /go/src/github.com/e-travel/cloudwatchlogsbeat
-COPY . .
-ENV CGO_ENABLED=0
-RUN apk update && \
-    apk add ca-certificates && \
-    GOOS=linux GOARCH=amd64 go build -i -o cloudwatchlogsbeat
+RUN apk update
+RUN apk add --no-cache ca-certificates glide git
 
+WORKDIR /go/src/github.com/e-travel/cloudwatchlogsbeat
+COPY glide.yaml glide.lock ./
+RUN glide install
+
+COPY cwl cwl
+COPY beater beater
+COPY main.go .
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -i -o cloudwatchlogsbeat
 
 FROM scratch
 
