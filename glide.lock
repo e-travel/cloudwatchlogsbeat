@@ -1,5 +1,5 @@
-hash: 864ac20296008284274ff4132a900f09bf2b5693d46f23c06a22796f9625ad12
-updated: 2020-10-09T15:27:19.749225073Z
+hash: 772b27efa857cc692906203e06d2196d2317cdd03c1f519f8d20ba958ed1d2da
+updated: 2020-10-12T13:33:50.6888068Z
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 8504021ea14c80e18b9dc7268df1f0756edf5277
@@ -15,7 +15,7 @@ imports:
   - libbeat/logp
   - libbeat/publisher
 - name: github.com/stretchr/testify
-  version: f654a9112bbeac49ca2cd45bfbe11533c4666cf8
+  version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
   subpackages:
   - mock
 testImports: []
