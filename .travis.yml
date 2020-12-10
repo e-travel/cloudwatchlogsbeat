@@ -1,16 +1,16 @@
 language: go
 go:
-- 1.11
-- 1.12
+- 1.14
+- 1.15
 - master
 before_install:
-- wget "https://github.com/Masterminds/glide/releases/download/v0.13.3/glide-v0.13.3-linux-amd64.tar.gz"
 - mkdir -p $HOME/bin
-- tar -vxz -C $HOME/bin --strip=1 -f glide-v0.13.3-linux-amd64.tar.gz
 - export PATH="$HOME/bin:$PATH"
-install: glide install
+install: 
+- go mod download
+- go mod vendor
 script:
-- go build -v
+- go build -mod=vendor -v
 - go test -v -cover ./cwl
 deploy:
   provider: releases
@@ -21,5 +21,5 @@ deploy:
   on:
     tags: true
     branch: master
-    go: 1.12
+    go: 1.15
     repo: e-travel/cloudwatchlogsbeat
