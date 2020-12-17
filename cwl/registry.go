@@ -8,8 +8,8 @@ type Registry interface {
 }
 
 type RegistryItem struct {
-	NextToken string
-	Buffer    string
+	LastEventTimestamp int64
+	Buffer             string
 }
 
 func generateKey(stream *Stream) string {

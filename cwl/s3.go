@@ -64,8 +64,6 @@ func (registry *S3Registry) ReadStreamInfo(stream *Stream) error {
 	if err != nil {
 		return err
 	}
-	// update stream
-	stream.queryParams.NextToken = aws.String(item.NextToken)
 	stream.buffer.Reset()
 	stream.buffer.WriteString(item.Buffer)
 
@@ -74,8 +72,8 @@ func (registry *S3Registry) ReadStreamInfo(stream *Stream) error {
 
 func (registry *S3Registry) WriteStreamInfo(stream *Stream) error {
 	item := RegistryItem{
-		NextToken: *stream.queryParams.NextToken,
-		Buffer:    stream.buffer.String(),
+		LastEventTimestamp: stream.LastEventTimestamp,
+		Buffer:             stream.buffer.String(),
 	}
 	body, err := json.Marshal(item)
 	if err != nil {
