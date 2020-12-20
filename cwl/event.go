@@ -9,6 +9,7 @@ type Event struct {
 	Stream    *Stream
 	Message   string
 	Timestamp int64
+	EventId   string
 }
 
 type EventPublisher interface {
@@ -23,6 +24,9 @@ type Publisher struct {
 func (publisher Publisher) Publish(event *Event) {
 	publisher.Client.Publish(beat.Event{
 		Timestamp: ToTime(event.Timestamp),
+		Meta: common.MapStr{
+			"_id": event.EventId,
+		},
 		Fields: common.MapStr{
 			"prospector": event.Stream.Group.Prospector.Id,
 			"type":       event.Stream.Group.Prospector.Id,

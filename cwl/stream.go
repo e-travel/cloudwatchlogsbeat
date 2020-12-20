@@ -17,7 +17,7 @@ type Stream struct {
 	Group  *Group
 	Params *Params
 
-	queryParams *cloudwatchlogs.GetLogEventsInput
+	queryParams *cloudwatchlogs.FilterLogEventsInput
 
 	// This is used for multi line mode. We store all text needed until we find
 	// the end of message
@@ -34,12 +34,11 @@ func NewStream(name string, group *Group, multiline *Multiline, finished chan<- 
 
 	startTime := time.Now().UTC().Add(-params.Config.StreamEventHorizon)
 
-	queryParams := &cloudwatchlogs.GetLogEventsInput{
-		LogGroupName:  aws.String(group.Name),
-		LogStreamName: aws.String(name),
-		StartFromHead: aws.Bool(true),
-		Limit:         aws.Int64(100),
-		StartTime:     aws.Int64(startTime.UnixNano() / 1e6),
+	queryParams := &cloudwatchlogs.FilterLogEventsInput{
+		LogGroupName:   aws.String(group.Name),
+		LogStreamNames: []*string{aws.String(name)},
+		Limit:          aws.Int64(100),
+		StartTime:      aws.Int64(startTime.UnixNano() / 1e6),
 	}
 
 	stream := &Stream{
@@ -49,7 +48,7 @@ func NewStream(name string, group *Group, multiline *Multiline, finished chan<- 
 		queryParams:        queryParams,
 		multiline:          multiline,
 		finished:           finished,
-		LastEventTimestamp: 1000 * time.Now().Unix(),
+		LastEventTimestamp: 0,
 	}
 
 	// Construct regular expression if multiline mode
@@ -62,30 +61,6 @@ func NewStream(name string, group *Group, multiline *Multiline, finished chan<- 
 	stream.multiRegex = regx
 
 	return stream
-}
-
-// Fetches the next batch of events from the cloudwatchlogs stream
-// returns the error (if any) otherwise nil
-func (stream *Stream) Next() error {
-	var err error
-
-	output, err := stream.Params.AWSClient.GetLogEvents(stream.queryParams)
-	if err != nil {
-		return err
-	}
-
-	// have we got anything new?
-	if len(output.Events) == 0 {
-		return nil
-	}
-	// process the events
-	for _, streamEvent := range output.Events {
-		stream.digest(streamEvent)
-		stream.LastEventTimestamp = aws.Int64Value(streamEvent.Timestamp)
-	}
-	stream.queryParams.NextToken = output.NextForwardToken
-	err = stream.Params.Registry.WriteStreamInfo(stream)
-	return err
 }
 
 // Coninuously monitors the stream for new events. If an error is
@@ -105,17 +80,43 @@ func (stream *Stream) Monitor() {
 		return
 	}
 
+	var seenEventIDs map[string]bool
+
+	clearSeenEventIds := func() {
+		seenEventIDs = make(map[string]bool, 0)
+	}
+
+	handlePage := func(page *cloudwatchlogs.FilterLogEventsOutput, lastPage bool) bool {
+		for _, streamEvent := range page.Events {
+			if stream.LastEventTimestamp == 0 || aws.Int64Value(streamEvent.Timestamp) > stream.LastEventTimestamp {
+				stream.LastEventTimestamp = aws.Int64Value(streamEvent.Timestamp)
+				clearSeenEventIds()
+			}
+			if _, seen := seenEventIDs[*streamEvent.EventId]; !seen {
+				stream.digest(streamEvent)
+				seenEventIDs[*streamEvent.EventId] = true
+			}
+		}
+		stream.Params.Registry.WriteStreamInfo(stream)
+		return !lastPage
+	}
+
 	reportTicker := time.NewTicker(stream.Params.Config.ReportFrequency)
 	defer reportTicker.Stop()
 
 	var eventRefreshFrequency = stream.Params.Config.StreamEventRefreshFrequency
 
 	for {
-		err := stream.Next()
+		err := stream.Params.AWSClient.FilterLogEventsPages(stream.queryParams, handlePage)
 		if err != nil {
 			logp.Err("%s %s", stream.FullName(), err.Error())
 			return
 		}
+		// move the needle after handling all pages
+		if stream.LastEventTimestamp != 0 {
+			stream.queryParams.SetStartTime(stream.LastEventTimestamp)
+		}
+
 		// is the stream expired?
 		if IsBefore(stream.Params.Config.StreamEventHorizon, stream.LastEventTimestamp) {
 			return
@@ -161,10 +162,11 @@ func (stream *Stream) publish(event *Event) {
 	stream.publishedEvents++
 }
 
-func (stream *Stream) digest(streamEvent *cloudwatchlogs.OutputLogEvent) {
+func (stream *Stream) digest(streamEvent *cloudwatchlogs.FilteredLogEvent) {
 	event := &Event{
 		Stream:    stream,
 		Timestamp: aws.Int64Value(streamEvent.Timestamp),
+		EventId:   *streamEvent.EventId,
 	}
 	if stream.multiline == nil {
 		stream.buffer.WriteString(*streamEvent.Message)
