@@ -4,8 +4,8 @@ import (
 	"os"
 
 	"github.com/e-travel/cloudwatchlogsbeat/beater"
-	cmd "github.com/elastic/beats/libbeat/cmd"
-	"github.com/elastic/beats/libbeat/cmd/instance"
+	cmd "github.com/elastic/beats/v7/libbeat/cmd"
+	"github.com/elastic/beats/v7/libbeat/cmd/instance"
 )
 
 // Name of this beat

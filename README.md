@@ -48,17 +48,15 @@ The latest beat release can be found
 
 ## Development
 
-First of all, make sure that you have a [working go
-installation](https://golang.org/doc/install) (this includes a valid
-`$GOPATH`). The [glide package manager](https://glide.sh) is also
-necessary for installing the beat's dependencies.
+Make sure you use Go of at least version 1.14 for module 
+support.
 
 The following steps will result in a working installation:
 
-    $ go get -u github.com/e-travel/cloudwatchlogsbeat
-    $ cd $GOPATH/src/github.com/e-travel/cloudwatchlogsbeat
-    $ glide install
-    $ go build -i # builds the beat and builds/installs the dependencies
+    $ git clone github.com/e-travel/cloudwatchlogsbeat
+    $ cd cloudwatchlogsbeat
+    $ go mod vendor
+    $ go build -mod=vendor -i # builds the beat and builds/installs the dependencies
     $ ./cloudwatchlogsbeat -e -d '*'
 
 # AWS configuration

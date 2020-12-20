@@ -1,16 +1,17 @@
-FROM golang:1.11-alpine AS builder
+FROM golang:1.15-alpine AS builder
 
 RUN apk update
-RUN apk add --no-cache ca-certificates glide git
+RUN apk add --no-cache ca-certificates git
 
 WORKDIR /go/src/github.com/e-travel/cloudwatchlogsbeat
-COPY glide.yaml glide.lock ./
-RUN glide install
+COPY go.mod go.sum ./
+RUN go mod download
 
 COPY cwl cwl
 COPY beater beater
 COPY main.go .
-RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -i -o cloudwatchlogsbeat
+RUN go mod vendor
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -mod=vendor -i -o cloudwatchlogsbeat
 
 FROM scratch
 
