@@ -3,7 +3,7 @@ module github.com/e-travel/cloudwatchlogsbeat
 go 1.15
 
 require (
-	github.com/aws/aws-sdk-go v1.28.14
+	github.com/aws/aws-sdk-go v1.33.0
 	github.com/elastic/beats/v7 v7.10.1
 	github.com/stretchr/testify v1.6.1
 )
